@@ -1,5 +1,6 @@
 package com.example.openticket.domain.booking;
 
+import com.example.openticket.domain.BaseEntity;
 import com.example.openticket.domain.bookingSeat.BookingSeat;
 import com.example.openticket.domain.seat.Seat;
 import com.example.openticket.domain.user.User;
@@ -25,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-public class Booking {
+public class Booking extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

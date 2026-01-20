@@ -1,5 +1,6 @@
 package com.example.openticket.domain.bookingSeat;
 
+import com.example.openticket.domain.BaseEntity;
 import com.example.openticket.domain.booking.Booking;
 import com.example.openticket.domain.seat.Seat;
 import jakarta.persistence.Column;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class BookingSeat {
+public class BookingSeat extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
