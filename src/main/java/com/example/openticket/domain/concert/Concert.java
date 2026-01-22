@@ -40,6 +40,13 @@ public class Concert extends BaseEntity {
 
     @Builder
     private Concert (String title, Category category, LocalDateTime startAt, LocalDateTime endAt, String venue) {
+        if (startAt == null || endAt == null) {
+            throw new IllegalArgumentException("시작 시간 및 종료 시간은 null일 수 없습니다.");
+        }
+        if (!startAt.isBefore(endAt)) {
+            throw new IllegalArgumentException("시작 시간은 종료 시간보다 이전이어야 합니다.");
+        }
+
         this.title = title;
         this.category = category;
         this.startAt = startAt;
