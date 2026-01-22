@@ -49,7 +49,7 @@ public class Seat extends BaseEntity {
 
     public void reserve() {
         if (this.status != SeatStatus.AVAILABLE) {
-            throw new IllegalStateException("이미 예약된 좌석입니다.");
+            throw new IllegalStateException("예약할 수 없는 좌석입니다.");
         }
         this.status = SeatStatus.RESERVED;
     }
