@@ -1,4 +1,4 @@
-package com.example.openticket.domain.concert;
+package com.example.openticket.domain.event;
 
 import com.example.openticket.domain.BaseEntity;
 import jakarta.persistence.Column;
@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
-public class Concert extends BaseEntity {
+public class Event extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,7 +39,7 @@ public class Concert extends BaseEntity {
     private String venue;
 
     @Builder
-    private Concert (String title, Category category, LocalDateTime startAt, LocalDateTime endAt, String venue) {
+    private Event(String title, Category category, LocalDateTime startAt, LocalDateTime endAt, String venue) {
         if (startAt == null || endAt == null) {
             throw new IllegalArgumentException("시작 시간 및 종료 시간은 null일 수 없습니다.");
         }

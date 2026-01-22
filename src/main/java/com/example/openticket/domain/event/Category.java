@@ -1,4 +1,4 @@
-package com.example.openticket.domain.concert;
+package com.example.openticket.domain.event;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

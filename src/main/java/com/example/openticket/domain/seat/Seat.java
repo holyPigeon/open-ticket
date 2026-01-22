@@ -1,7 +1,7 @@
 package com.example.openticket.domain.seat;
 
 import com.example.openticket.domain.BaseEntity;
-import com.example.openticket.domain.concert.Concert;
+import com.example.openticket.domain.event.Event;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -27,7 +27,7 @@ public class Seat extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "concert_id", nullable = false)
-    private Concert concert;
+    private Event event;
 
     @Column(nullable = false)
     private String seatNumber;
@@ -40,8 +40,8 @@ public class Seat extends BaseEntity {
     private SeatStatus status;
 
     @Builder
-    private Seat(Concert concert, String seatNumber, int price) {
-        this.concert = concert;
+    private Seat(Event event, String seatNumber, int price) {
+        this.event = event;
         this.seatNumber = seatNumber;
         this.price = price;
         this.status = SeatStatus.AVAILABLE;
