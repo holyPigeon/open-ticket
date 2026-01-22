@@ -1,7 +1,9 @@
 package com.example.openticket.domain.seat;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum SeatStatus {
 
