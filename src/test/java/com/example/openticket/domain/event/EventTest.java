@@ -55,7 +55,7 @@ class EventTest {
 
     }
 
-    @DisplayName("이벤트의 시작 시간이나 종료 시간이 null일 경우, 예외가 발생한다.")
+    @DisplayName("이벤트의 시작 시간이 종료 시간 이전이 아닌 경우, 예외가 발생한다.")
     @Test
     void createEventFail2() {
         // given
