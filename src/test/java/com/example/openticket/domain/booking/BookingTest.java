@@ -27,17 +27,17 @@ class BookingTest {
     @Test
     void calculateTotalPrice() {
         // given
-        int seatPrice1 = 10000;
-        int seatPrice2 = 10000;
-        int seatPrice3 = 20000;
-        List<Seat> seats = createSeats(seatPrice1, seatPrice2, seatPrice3);
+        List<Seat> seats = List.of(
+                createSeat("A1", 10000),
+                createSeat("A2", 10000),
+                createSeat("A3", 20000)
+        );
 
         // when
         Booking booking = createBooking(LocalDateTime.now(), seats);
 
         // then
-        int seatPriceSum = seatPrice1 + seatPrice2 + seatPrice3;
-        assertThat(booking.getTotalPrice()).isEqualTo(seatPriceSum);
+        assertThat(booking.getTotalPrice()).isEqualTo(40000);
     }
 
     @DisplayName("예약 생성 시, 예약 시간을 기록한다.")
@@ -45,7 +45,7 @@ class BookingTest {
     void registeredDateTime() {
         // given
         LocalDateTime bookedAt = LocalDateTime.now();
-        List<Seat> seats = createSeats();
+        List<Seat> seats = createDefaultSeats();
 
         // when
         Booking booking = createBooking(bookedAt, seats);
@@ -58,7 +58,7 @@ class BookingTest {
     @Test
     void initialBookingStatus() {
         // given
-        List<Seat> seats = createSeats();
+        List<Seat> seats = createDefaultSeats();
 
         // when
         Booking booking = createBooking(LocalDateTime.now(), seats);
@@ -71,25 +71,25 @@ class BookingTest {
         return Booking.create(user, bookedAt, seats);
     }
 
-    private User createUser() {
-        return User.builder()
-                .name("test user 1")
-                .build();
-    }
-
-    private List<Seat> createSeats(int... prices) {
-        Seat seat1 = createSeat(event, "001", prices[0]);
-        Seat seat2 = createSeat(event, "002", prices[1]);
-        Seat seat3 = createSeat(event, "003", prices[2]);
+    private List<Seat> createDefaultSeats() {
+        Seat seat1 = createSeat("A1", 10000);
+        Seat seat2 = createSeat("A2", 10000);
+        Seat seat3 = createSeat("A3", 10000);
 
         return List.of(seat1, seat2, seat3);
     }
 
-    private Seat createSeat(Event event, String seatNumber, int price) {
+    private Seat createSeat(String seatNumber, int price) {
         return Seat.builder()
                 .event(event)
                 .seatNumber(seatNumber)
                 .price(price)
+                .build();
+    }
+
+    private User createUser() {
+        return User.builder()
+                .name("test user 1")
                 .build();
     }
 
