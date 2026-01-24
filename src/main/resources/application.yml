@@ -3,29 +3,31 @@ spring:
     default: local
 
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3307/open_ticket
+    username: root
+    password: '0000'
 
   jpa:
     hibernate:
       ddl-auto: none
-
 ---
 spring:
   config:
     activate:
       on-profile: local
 
+  sql:
+    init:
+      mode: always
+
   jpa:
     hibernate:
       ddl-auto: create
     show-sql: true
+
+    defer-datasource-initialization: true
+
     properties:
       hibernate:
         format_sql: true
-
-  h2:
-    console:
-      enabled: true
