@@ -55,4 +55,11 @@ public class Seat extends BaseEntity {
         }
         this.status = SeatStatus.RESERVED;
     }
+
+    public void cancelReservation() {
+        if (this.status != SeatStatus.RESERVED) {
+            throw new IllegalStateException("예약 취소할 수 없는 좌석입니다.");
+        }
+        this.status = SeatStatus.AVAILABLE;
+    }
 }

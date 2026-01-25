@@ -67,6 +67,14 @@ public class Booking extends BaseEntity {
         return new Booking(user, bookedAt, seats);
     }
 
+    public void cancel() {
+        if (this.status != BookingStatus.BOOKED) {
+            throw new IllegalStateException("취소할 수 없는 예약 상태입니다.");
+        }
+        this.status = BookingStatus.CANCELLED;
+        bookingSeats.forEach(bookingSeat -> bookingSeat.getSeat().cancelReservation());
+    }
+
     private int calculateTotalPrice(List<Seat> seats) {
         return seats.stream()
                 .mapToInt(Seat::getPrice)
