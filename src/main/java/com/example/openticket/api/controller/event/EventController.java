@@ -1,0 +1,39 @@
+package com.example.openticket.api.controller.event;
+
+import com.example.openticket.api.ApiResponse;
+import com.example.openticket.api.controller.event.dto.request.EventSearchRequest;
+import com.example.openticket.api.service.event.EventService;
+import com.example.openticket.api.service.event.dto.response.EventResponse;
+import jakarta.validation.Valid;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequiredArgsConstructor
+public class EventController {
+
+    private final EventService eventService;
+
+    @GetMapping("/api/v1/events")
+    public ApiResponse<List<EventResponse>> searchEvents(
+            @RequestBody @Valid EventSearchRequest request,
+            @PageableDefault(size = 20, sort = "date", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ApiResponse.ok(eventService.searchEvents(request.toServiceRequest(), pageable));
+    }
+
+    @GetMapping("/api/v1/events/{eventId}")
+    public ApiResponse<EventResponse> getEventDetails(
+            @RequestBody @Valid EventSearchRequest request,
+            @PathVariable Long eventId
+    ) {
+        return ApiResponse.ok(eventService.getEventDetails(eventId));
+    }
+}
