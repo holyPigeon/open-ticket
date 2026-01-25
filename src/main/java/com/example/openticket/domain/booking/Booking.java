@@ -75,6 +75,10 @@ public class Booking extends BaseEntity {
         bookingSeats.forEach(bookingSeat -> bookingSeat.getSeat().cancelReservation());
     }
 
+    public boolean isCancelled() {
+        return this.status == BookingStatus.CANCELLED;
+    }
+
     private int calculateTotalPrice(List<Seat> seats) {
         return seats.stream()
                 .mapToInt(Seat::getPrice)
