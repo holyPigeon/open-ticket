@@ -14,7 +14,7 @@ public record SeatResponse(
     public static SeatResponse of(Seat seat) {
         return new SeatResponse(
                 seat.getId(),
-                EventResponse.of(seat.getEvent()),
+                EventResponse.from(seat.getEvent()),
                 seat.getSeatNumber(),
                 seat.getPrice(),
                 seat.getStatus(

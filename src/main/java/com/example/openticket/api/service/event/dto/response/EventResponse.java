@@ -12,7 +12,8 @@ public record EventResponse(
         LocalDateTime endAt,
         String venue
 ) {
-    public static EventResponse of(Event event) {
+    public static EventResponse from
+            (Event event) {
         return new EventResponse(
                 event.getId(),
                 event.getTitle(),
