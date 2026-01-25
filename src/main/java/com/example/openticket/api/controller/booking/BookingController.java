@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,7 +33,7 @@ public class BookingController {
         return ApiResponse.ok(bookingService.createBooking(user, request.toServiceRequest(), now));
     }
 
-    @GetMapping("/api/v1/user/{userId}/bookings")
+    @GetMapping("/api/v1/bookings/my")
     public ApiResponse<List<BookingResponse>> getUserBookings(@LoginUser User user) {
         return ApiResponse.ok(bookingService.getUserBookings(user));
     }
@@ -42,7 +43,7 @@ public class BookingController {
         return ApiResponse.ok(bookingService.getBookingDetails(bookingId));
     }
 
-    @PostMapping("/api/v1/bookings/{bookingId}/cancel")
+    @PatchMapping("/api/v1/bookings/{bookingId}/cancel")
     public ApiResponse<BookingResponse> cancelBooking(@PathVariable Long bookingId) {
         BookingResponse response = bookingService.cancelBooking(bookingId);
 
