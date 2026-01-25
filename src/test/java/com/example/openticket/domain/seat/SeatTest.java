@@ -19,7 +19,7 @@ class SeatTest {
         event = createEvent();
     }
 
-    @DisplayName("좌석이 예약 가능 상태일 경우, 예약할 수 있다.")
+    @DisplayName("좌석을 예약하면 좌석 상태가 예약됨으로 변경된다.")
     @Test
     void reserveWhenSeatStatusAvailable() {
         // given
@@ -32,22 +32,30 @@ class SeatTest {
         assertThat(seat.getStatus()).isEqualTo(SeatStatus.RESERVED);
     }
 
-    @DisplayName("좌석이 예약 가능 상태가 아닐 경우, 예외가 발생한다.")
+    @DisplayName("예약 가능 상태가 아닌 좌석을 예약하려 할 경우, 예외가 발생한다.")
     @Test
     void throwExceptionWhenSeatStatusNotAvailable() {
         // given
         Seat seat = createSeat();
 
-        // when
-        seat.reserve();
-
-        // then
-        assertThatThrownBy(() -> seat.reserve())
+        // when, then
+        assertThatThrownBy(seat::reserve)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("예약할 수 없는 좌석입니다.");
     }
 
+    @DisplayName("예약을 취소하면 좌석 상태가 예약 가능으로 변경된다.")
+    @Test
+    void cancelReservation() {
+        // given
+        Seat seat = createSeat();
 
+        // when
+        seat.cancelReservation();
+
+        // then
+        assertThat(seat.getStatus()).isEqualTo(SeatStatus.AVAILABLE);
+    }
 
     private Seat createSeat() {
         return Seat.builder()
