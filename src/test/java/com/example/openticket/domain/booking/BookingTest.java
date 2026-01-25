@@ -1,6 +1,7 @@
 package com.example.openticket.domain.booking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
@@ -65,6 +66,49 @@ class BookingTest {
 
         // then
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.BOOKED);
+    }
+
+    @DisplayName("예약을 취소하면 예약 상태가 취소로 변경된다.")
+    @Test
+    void cancel() {
+        // given
+        Booking booking = createDefaultBooking();
+
+        // when
+        booking.cancel();
+
+        // then
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @DisplayName("예약 상태가 아닌 예약을 취소하려 할 때, 예외가 발생한다.")
+    @Test
+    void cancelException1() {
+        // given
+        Booking booking = createDefaultBooking();
+        booking.cancel();
+
+        // when, then
+        assertThatThrownBy(booking::cancel)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("취소할 수 없는 예약 상태입니다.");
+    }
+
+    @DisplayName("")
+    @Test
+    void isCancelled() {
+        // given
+        Booking booking = createDefaultBooking();
+
+        // when
+        booking.cancel();
+
+        // then
+        assertThat(booking.isCancelled()).isTrue();
+    }
+
+    private Booking createDefaultBooking() {
+        return createBooking(LocalDateTime.now(), createDefaultSeats());
     }
 
     private Booking createBooking(LocalDateTime bookedAt, List<Seat> seats) {
