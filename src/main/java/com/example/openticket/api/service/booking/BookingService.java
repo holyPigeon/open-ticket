@@ -20,6 +20,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final SeatRepository seatRepository;
 
+    @Transactional
     public BookingResponse createBooking(User user, BookingCreateServiceRequest request, LocalDateTime now) {
         List<Seat> seats = request.seatIds().stream()
                 .map(seatId -> seatRepository.findById(seatId)
@@ -46,6 +47,7 @@ public class BookingService {
         return BookingResponse.of(booking);
     }
 
+    @Transactional
     public BookingResponse cancelBooking(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found: " + bookingId));
