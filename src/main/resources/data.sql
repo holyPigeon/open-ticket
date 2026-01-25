@@ -15,7 +15,7 @@ VALUES ('아이유 콘서트', 'CONCERT', '2026-05-01 19:00:00', '2026-05-01 22:
 -- 상태: AVAILABLE(예약 가능), RESERVED(예약중), SOLD(판매 완료)
 -- 주의: Seat 엔티티의 @JoinColumn(name = "concert_id") 반영
 INSERT INTO seats (event_id, seat_number, price, seat_status, created_at, last_modified_at)
-VALUES (1, 'A1', 150000, 'SOLD', NOW(), NOW()),      -- 이미 팔린 좌석
+VALUES (1, 'A1', 150000, 'RESERVED', NOW(), NOW()),      -- 이미 팔린 좌석
        (1, 'A2', 150000, 'AVAILABLE', NOW(), NOW()), -- 구매 가능
        (1, 'A3', 150000, 'AVAILABLE', NOW(), NOW()), -- 구매 가능
        (1, 'B1', 120000, 'RESERVED', NOW(), NOW()),  -- 누군가 결제 진행 중 (점유)
