@@ -57,6 +57,22 @@ class SeatTest {
         assertThat(seat.getStatus()).isEqualTo(SeatStatus.AVAILABLE);
     }
 
+    @DisplayName("예약 완료 상태가 아닌 좌석에 대해 예약을 취소하려 할 경우, 예외가 발생한다.")
+    @Test
+    void cancelReservationException1() {
+        // given
+        Seat seat = createSeat();
+        seat.reserve();
+
+        // when
+        seat.cancelReservation();
+
+        // when, then
+        assertThatThrownBy(seat::cancelReservation)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("예약 취소할 수 없는 좌석입니다.");
+    }
+
     private Seat createSeat() {
         return Seat.builder()
                 .event(event)
