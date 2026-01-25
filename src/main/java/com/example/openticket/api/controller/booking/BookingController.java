@@ -38,12 +38,12 @@ public class BookingController {
     }
 
     @GetMapping("/api/v1/bookings/{bookingId}")
-    public ApiResponse<BookingResponse> getBookingDetails(@PathVariable("bookingId") Long bookingId) {
+    public ApiResponse<BookingResponse> getBookingDetails(@PathVariable Long bookingId) {
         return ApiResponse.ok(bookingService.getBookingDetails(bookingId));
     }
 
     @PostMapping("/api/v1/bookings/{bookingId}/cancel")
-    public ApiResponse<BookingResponse> cancelBooking(@PathVariable("bookingId") Long bookingId) {
+    public ApiResponse<BookingResponse> cancelBooking(@PathVariable Long bookingId) {
         BookingResponse response = bookingService.cancelBooking(bookingId);
 
         return ApiResponse.ok(response);
