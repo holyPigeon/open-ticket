@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
 import java.time.LocalDateTime;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,7 @@ class SeatTest {
     void throwExceptionWhenSeatStatusNotAvailable() {
         // given
         Seat seat = createSeat();
+        seat.reserve();
 
         // when, then
         assertThatThrownBy(seat::reserve)
@@ -49,6 +51,7 @@ class SeatTest {
     void cancelReservation() {
         // given
         Seat seat = createSeat();
+        seat.reserve();
 
         // when
         seat.cancelReservation();
