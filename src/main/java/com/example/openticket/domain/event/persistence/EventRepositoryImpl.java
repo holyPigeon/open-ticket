@@ -28,8 +28,9 @@ public class EventRepositoryImpl implements EventRepositoryCustom {
                         venueContains(request.venue()),
                         categoryEq(request.category())
                 )
+                .orderBy(event.id.desc())
                 .offset(pageable.getOffset())
-                .limit(pageable.getPageSize()) // 여기서는 +1 안함 (Page니까)
+                .limit(pageable.getPageSize())
                 .fetch();
         JPAQuery<Long> countQuery = getCountQuery(request);
 

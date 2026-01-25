@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,8 +24,8 @@ public class EventController {
 
     @GetMapping("/api/v1/events")
     public ApiResponse<List<EventResponse>> searchEvents(
-            @RequestBody @Valid EventSearchRequest request,
-            @PageableDefault(size = 20, sort = "date", direction = Sort.Direction.DESC) Pageable pageable
+            @ModelAttribute EventSearchRequest request,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ApiResponse.ok(eventService.searchEvents(request.toServiceRequest(), pageable));
     }
