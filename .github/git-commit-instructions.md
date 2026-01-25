@@ -14,7 +14,8 @@ Use one of the following types (keep strictly in English):
 - `fix`: A bug fix
 - `docs`: Documentation only changes
 - `style`: Changes that do not affect the meaning of the code (white-space, formatting, etc)
-- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `refactor`: A code change that neither fixes a bug nor adds a feature (Includes removing unused files or code)
+- `chore`: Changes to the build process, auxiliary tools, or deleting configuration files
 - `perf`: A code change that improves performance
 - `test`: Adding missing tests or correcting existing tests
 - `chore`: Changes to the build process or auxiliary tools and libraries
@@ -61,3 +62,9 @@ refactor(user): 회원 가입 로직을 도메인 서비스로 분리
 
 - `UserService`의 비대해진 로직을 `UserDomainService`로 이관
 - 회원 유효성 검사 로직(`UserValidator`) 분리
+
+### Example 4 (Deletion)
+refactor(event): 사용하지 않는 이벤트 리스너 삭제
+
+- 더 이상 사용되지 않는 `OldEventListener` 클래스 삭제
+- `EventService`에서 해당 리스너 호출 부분 제거
