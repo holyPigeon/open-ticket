@@ -1,4 +1,4 @@
-package com.example.openticket.config;
+package com.example.openticket.global.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

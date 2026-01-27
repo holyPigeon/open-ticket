@@ -1,4 +1,4 @@
-package com.example.openticket.config.auth;
+package com.example.openticket.global.auth;
 
 import com.example.openticket.domain.user.User;
 import com.example.openticket.domain.user.UserRepository;

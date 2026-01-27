@@ -4,7 +4,7 @@ import com.example.openticket.api.ApiResponse;
 import com.example.openticket.api.controller.booking.dto.request.BookingCreateRequest;
 import com.example.openticket.api.service.booking.BookingService;
 import com.example.openticket.api.service.booking.dto.response.BookingResponse;
-import com.example.openticket.config.auth.LoginUser;
+import com.example.openticket.global.auth.LoginUser;
 import com.example.openticket.domain.user.User;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;

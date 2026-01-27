@@ -1,6 +1,6 @@
-package com.example.openticket.config;
+package com.example.openticket.global.config;
 
-import com.example.openticket.config.auth.LoginUserArgumentResolver;
+import com.example.openticket.global.auth.LoginUserArgumentResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

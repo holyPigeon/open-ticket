@@ -1,6 +1,6 @@
 package com.example.openticket.support;
 
-import com.example.openticket.config.QueryDslConfig;
+import com.example.openticket.global.config.QueryDslConfig;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;

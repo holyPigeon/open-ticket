@@ -1,4 +1,4 @@
-package com.example.openticket.config.auth;
+package com.example.openticket.global.auth;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
