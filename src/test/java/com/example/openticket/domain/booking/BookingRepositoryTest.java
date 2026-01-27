@@ -36,8 +36,8 @@ class BookingRepositoryTest extends IntegrationTestSupport {
     @Test
     void findByUserId() {
         // given
-        User user1 = saveUser("test user 1");
-        User user2 = saveUser("test user 2");
+        User user1 = saveUser("test user 1", "test email 1", "test password 1");
+        User user2 = saveUser("test user 2", "test email 2", "test password 2");
         Event event = saveSampleEvent();
 
         LocalDateTime now = LocalDateTime.now();
@@ -65,9 +65,11 @@ class BookingRepositoryTest extends IntegrationTestSupport {
         bookingRepository.save(booking);
     }
 
-    private User saveUser(String name) {
+    private User saveUser(String name, String email, String password) {
         User user = User.builder()
                 .name(name)
+                .email(email)
+                .password(password)
                 .build();
 
         return userRepository.save(user);

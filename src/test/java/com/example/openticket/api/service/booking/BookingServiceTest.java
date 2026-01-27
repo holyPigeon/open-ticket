@@ -45,7 +45,7 @@ class BookingServiceTest extends IntegrationTestSupport {
     @Test
     void createBooking() {
         // given
-        User user = saveUser();
+        User user = saveSampleUser();
         Event event = saveSampleEvent();
         Seat seat1 = saveSeat(event, "A1");
         Seat seat2 = saveSeat(event, "A2");
@@ -77,7 +77,7 @@ class BookingServiceTest extends IntegrationTestSupport {
     @Test
     void createBookingWithInvalidSeatId() {
         // given
-        User user = saveUser();
+        User user = saveSampleUser();
         Event event = saveSampleEvent();
         Seat seat1 = saveSeat(event, "A1");
 
@@ -96,7 +96,7 @@ class BookingServiceTest extends IntegrationTestSupport {
     @Test
     void createBookingWithReservedSeat() {
         // given
-        User user = saveUser();
+        User user = saveSampleUser();
         Event event = saveSampleEvent();
         Seat seat1 = saveSeat(event, "A1");
         Seat seat2 = saveSeat(event, "A2");
@@ -118,7 +118,7 @@ class BookingServiceTest extends IntegrationTestSupport {
     @Test
     void cancelBooking() {
         // given
-        User user = saveUser();
+        User user = saveSampleUser();
         Event event = saveSampleEvent();
         Seat seat1 = saveSeat(event, "A1");
         Seat seat2 = saveSeat(event, "A2");
@@ -140,7 +140,7 @@ class BookingServiceTest extends IntegrationTestSupport {
     @Test
     void cancelBookingAlreadyCancelled() {
         // given
-        User user = saveUser();
+        User user = saveSampleUser();
         Event event = saveSampleEvent();
         Seat seat = saveSeat(event, "A1");
 
@@ -160,9 +160,11 @@ class BookingServiceTest extends IntegrationTestSupport {
         return bookingRepository.save(booking);
     }
 
-    private User saveUser() {
+    private User saveSampleUser() {
         User user = User.builder()
-                .name("탄지로")
+                .name("test user 1")
+                .email("test email 1")
+                .password("test password 1")
                 .build();
 
         return userRepository.save(user);

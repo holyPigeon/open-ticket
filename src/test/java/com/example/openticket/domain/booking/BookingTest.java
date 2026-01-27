@@ -20,8 +20,8 @@ class BookingTest {
 
     @BeforeEach
     void setUp() {
-        user = createUser();
-        event = createEvent();
+        user = createSampleUser();
+        event = createSampleEvent();
     }
     
     @DisplayName("예약 생성 시, 예약하려는 좌석 리스트의 총 가격을 계산한다.")
@@ -131,13 +131,15 @@ class BookingTest {
                 .build();
     }
 
-    private User createUser() {
+    private User createSampleUser() {
         return User.builder()
                 .name("test user 1")
+                .email("test email 1")
+                .password("test password 1")
                 .build();
     }
 
-    private Event createEvent() {
+    private Event createSampleEvent() {
         return Event.builder()
                 .title("test event 1")
                 .category(Category.CONCERT)
