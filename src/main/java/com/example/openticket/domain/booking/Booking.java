@@ -56,11 +56,11 @@ public class Booking extends BaseEntity {
         this.totalPrice = calculateTotalPrice(seats);
         this.bookedAt = bookedAt;
         this.status = BookingStatus.BOOKED;
-        this.bookingSeats = seats.stream()
-                .map(seat -> {
-                    seat.book();
-                    return new BookingSeat(this, seat);
-                }).collect(Collectors.toList());
+
+        seats.forEach(seat -> {
+            seat.book();
+            this.bookingSeats.add(new BookingSeat(this, seat));
+        });
     }
 
     public static Booking create(User user, LocalDateTime bookedAt, List<Seat> seats) {
