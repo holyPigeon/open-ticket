@@ -1,8 +1,8 @@
 -- 1. 사용자 (User)
-INSERT INTO users (name, created_at, last_modified_at)
-VALUES ('탄지로', NOW(), NOW()),
-       ('젠이츠', NOW(), NOW()),
-       ('이노스케', NOW(), NOW());
+INSERT INTO users (name, email, password, created_at, last_modified_at)
+VALUES ('박민석', 'user1@gmail.com', 'password1', NOW(), NOW()),
+       ('최일구', 'user2@gmail.com', 'password2', NOW(), NOW()),
+       ('성윤모', 'user3@gmail.com', 'password3', NOW(), NOW());
 
 -- 2. 이벤트 (Event) - Category: CONCERT, SPORTS
 INSERT INTO events (title, category, start_at, end_at, venue, created_at, last_modified_at)
