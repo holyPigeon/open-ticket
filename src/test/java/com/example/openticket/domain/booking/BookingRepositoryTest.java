@@ -36,23 +36,18 @@ class BookingRepositoryTest extends IntegrationTestSupport {
     @Test
     void findByUserId() {
         // given
-        User user1 = createUser("test user 1");
-        User user2 = createUser("test user 2");
-        userRepository.saveAll(List.of(user1, user2));
-
-        Event event = createEvent();
-        eventRepository.save(event);
+        User user1 = saveUser("test user 1");
+        User user2 = saveUser("test user 2");
+        Event event = saveSampleEvent();
 
         LocalDateTime now = LocalDateTime.now();
 
-        Seat seat1 = createSeat(event, "A1", 10000);
-        Seat seat2 = createSeat(event, "A2", 10000);
-        Seat seat3 = createSeat(event, "A3", 20000);
-        seatRepository.saveAll(List.of(seat1, seat2, seat3));
+        Seat seat1 = saveSeat(event, "A1", 10000);
+        Seat seat2 = saveSeat(event, "A2", 10000);
+        Seat seat3 = saveSeat(event, "A3", 20000);
 
-        Booking booking1 = Booking.create(user1, now, List.of(seat1, seat2));
-        Booking booking2 = Booking.create(user2, now, List.of(seat3));
-        bookingRepository.saveAll(List.of(booking1, booking2));
+        saveBooking(user1, now, List.of(seat1, seat2));
+        saveBooking(user2, now, List.of(seat3));
 
         // when
         List<Booking> bookings = bookingRepository.findByUserId(user1.getId());
@@ -65,38 +60,38 @@ class BookingRepositoryTest extends IntegrationTestSupport {
                 );
     }
 
-    private User createUser(String name) {
-        return User.builder()
+    private void saveBooking(User user, LocalDateTime bookedAt, List<Seat> seats) {
+        Booking booking = Booking.create(user, bookedAt, seats);
+        bookingRepository.save(booking);
+    }
+
+    private User saveUser(String name) {
+        User user = User.builder()
                 .name(name)
                 .build();
+
+        return userRepository.save(user);
     }
 
-    private List<Seat> createSeats(Event event, int... prices) {
-        Seat seat1 = createSeat(event, "A1", prices[0]);
-        Seat seat2 = createSeat(event, "A2", prices[1]);
-        Seat seat3 = createSeat(event, "A3", prices[2]);
-
-        List<Seat> seats = List.of(seat1, seat2, seat3);
-        seatRepository.saveAll(seats);
-
-        return seats;
-    }
-
-    private Seat createSeat(Event event, String seatNumber, int price) {
-        return Seat.builder()
+    private Seat saveSeat(Event event, String seatNumber, int price) {
+        Seat seat = Seat.builder()
                 .event(event)
                 .seatNumber(seatNumber)
                 .price(price)
                 .build();
+
+        return seatRepository.save(seat);
     }
 
-    private Event createEvent() {
-        return Event.builder()
+    private Event saveSampleEvent() {
+        Event event = Event.builder()
                 .title("test event 1")
                 .category(Category.CONCERT)
                 .venue("test venue 1")
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
                 .build();
+
+        return eventRepository.save(event);
     }
 }

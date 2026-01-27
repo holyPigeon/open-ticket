@@ -25,12 +25,9 @@ class SeatRepositoryTest extends IntegrationTestSupport {
     @Test
     void findAllById() {
         // given
-        Event event = createEvent();
-        eventRepository.save(event);
-
-        Seat seat1 = createSeat(event, "A1", 10000);
-        Seat seat2 = createSeat(event, "A2", 20000);
-        seatRepository.saveAll(List.of(seat1, seat2));
+        Event event = saveSampleEvent();
+        Seat seat1 = saveSeat(event, "A1", 10000);
+        Seat seat2 = saveSeat(event, "A2", 20000);
 
         // when
         List<Seat> seats = seatRepository.findAllById(List.of(seat1.getId(), seat2.getId()));
@@ -44,21 +41,25 @@ class SeatRepositoryTest extends IntegrationTestSupport {
                 );
     }
 
-    private Seat createSeat(Event event, String seatNumber, int price) {
-        return Seat.builder()
+    private Seat saveSeat(Event event, String seatNumber, int price) {
+        Seat seat = Seat.builder()
                 .event(event)
                 .seatNumber(seatNumber)
                 .price(price)
                 .build();
+
+        return seatRepository.save(seat);
     }
 
-    private Event createEvent() {
-        return Event.builder()
+    private Event saveSampleEvent() {
+        Event event = Event.builder()
                 .title("test event 1")
                 .category(Category.CONCERT)
                 .venue("test venue 1")
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
                 .build();
+
+        return eventRepository.save(event);
     }
 }

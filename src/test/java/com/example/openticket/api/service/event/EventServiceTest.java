@@ -10,7 +10,6 @@ import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
 import com.example.openticket.domain.event.persistence.EventRepository;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +30,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsByCategory() {
         // given
-        Event event1 = createEvent("test event 1", Category.CONCERT, "test venue 1");
-        Event event2 = createEvent("test event 2", Category.SPORTS, "test venue 2");
-        Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
-        eventRepository.saveAll(List.of(event1, event2, event3));
+        saveEvent("test event 1", Category.CONCERT, "test venue 1");
+        saveEvent("test event 2", Category.SPORTS, "test venue 2");
+        saveEvent("test event 3", Category.CONCERT, "test venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10);
@@ -55,10 +53,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsByTitle() {
         // given
-        Event event1 = createEvent("test event 1", Category.CONCERT, "test venue 1");
-        Event event2 = createEvent("test event 2", Category.SPORTS, "test venue 2");
-        Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
-        eventRepository.saveAll(List.of(event1, event2, event3));
+        saveEvent("test event 1", Category.CONCERT, "test venue 1");
+        saveEvent("test event 2", Category.SPORTS, "test venue 2");
+        saveEvent("test event 3", Category.CONCERT, "test venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("test event 1", null, "");
         Pageable pageable = PageRequest.of(0, 10);
@@ -78,10 +75,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsByVenue() {
         // given
-        Event event1 = createEvent("test event 1", Category.CONCERT, "test venue 1");
-        Event event2 = createEvent("test event 2", Category.SPORTS, "test venue 2");
-        Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
-        eventRepository.saveAll(List.of(event1, event2, event3));
+        saveEvent("test event 1", Category.CONCERT, "test venue 1");
+        saveEvent("test event 2", Category.SPORTS, "test venue 2");
+        saveEvent("test event 3", Category.CONCERT, "test venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("", null, "test venue 1");
         Pageable pageable = PageRequest.of(0, 10);
@@ -101,10 +97,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsWithSort() {
         // given
-        Event event1 = createEvent("test event 1", Category.CONCERT, "test venue 1");
-        Event event2 = createEvent("test event 2", Category.SPORTS, "test venue 2");
-        Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
-        eventRepository.saveAll(List.of(event1, event2, event3));
+        saveEvent("test event 1", Category.CONCERT, "test venue 1");
+        saveEvent("test event 2", Category.SPORTS, "test venue 2");
+        saveEvent("test event 3", Category.CONCERT, "test venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").descending());
@@ -125,10 +120,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsWithNoResult() {
         // given
-        Event event1 = createEvent("test event 1", Category.CONCERT, "test venue 1");
-        Event event2 = createEvent("test event 2", Category.SPORTS, "test venue 2");
-        Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
-        eventRepository.saveAll(List.of(event1, event2, event3));
+        saveEvent("test event 1", Category.CONCERT, "test venue 1");
+        saveEvent("test event 2", Category.SPORTS, "test venue 2");
+        saveEvent("test event 3", Category.CONCERT, "test venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("없는 제목", null, "");
 
@@ -139,13 +133,15 @@ class EventServiceTest extends IntegrationTestSupport {
         assertThat(result.getContent()).isEmpty();
     }
 
-    private Event createEvent(String title, Category category, String venue) {
-        return Event.builder()
+    private Event saveEvent(String title, Category category, String venue) {
+        Event event = Event.builder()
                 .title(title)
                 .category(category)
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
                 .venue(venue)
                 .build();
+
+        return eventRepository.save(event);
     }
 }
