@@ -20,10 +20,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class BookingRepositoryTest extends IntegrationTestSupport {
 
-    @Autowired BookingRepository bookingRepository;
-    @Autowired SeatRepository seatRepository;
-    @Autowired UserRepository userRepository;
-    @Autowired EventRepository eventRepository;
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private SeatRepository seatRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
 
     @DisplayName("사용자 ID로 예약 내역을 조회할 수 있다.")
     @Test

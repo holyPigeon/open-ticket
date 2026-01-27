@@ -15,8 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 class SeatRepositoryTest extends IntegrationTestSupport {
 
-    @Autowired SeatRepository seatRepository;
-    @Autowired EventRepository eventRepository;
+    @Autowired
+    private SeatRepository seatRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
 
     @DisplayName("좌석 ID 리스트로 좌석들을 조회할 수 있다.")
     @Test
