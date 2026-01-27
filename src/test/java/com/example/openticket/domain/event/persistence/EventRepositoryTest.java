@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 import com.example.openticket.IntegrationTestSupport;
-import com.example.openticket.api.service.event.dto.request.EventSearchServiceRequest;
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
 import java.time.LocalDateTime;
@@ -30,11 +29,11 @@ class EventRepositoryTest extends IntegrationTestSupport {
         Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
         eventRepository.saveAll(List.of(event1, event2, event3));
 
-        EventSearchServiceRequest searchRequest = new EventSearchServiceRequest("", Category.CONCERT, "");
+        EventSearchCondition searchCondition = new EventSearchCondition("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<Event> events = eventRepository.findAllWithSearchCondition(searchRequest, pageable).toList();
+        List<Event> events = eventRepository.findAllWithSearchCondition(searchCondition, pageable).toList();
 
         // then
         assertThat(events).hasSize(2)
@@ -54,11 +53,11 @@ class EventRepositoryTest extends IntegrationTestSupport {
         Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
         eventRepository.saveAll(List.of(event1, event2, event3));
 
-        EventSearchServiceRequest searchRequest = new EventSearchServiceRequest("test event 1", null, "");
+        EventSearchCondition searchCondition = new EventSearchCondition("test event 1", null, "");
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<Event> events = eventRepository.findAllWithSearchCondition(searchRequest, pageable).toList();
+        List<Event> events = eventRepository.findAllWithSearchCondition(searchCondition, pageable).toList();
 
         // then
         assertThat(events).hasSize(1)
@@ -77,11 +76,11 @@ class EventRepositoryTest extends IntegrationTestSupport {
         Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
         eventRepository.saveAll(List.of(event1, event2, event3));
 
-        EventSearchServiceRequest searchRequest = new EventSearchServiceRequest("", null, "test venue 1");
+        EventSearchCondition searchCondition = new EventSearchCondition("", null, "test venue 1");
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<Event> events = eventRepository.findAllWithSearchCondition(searchRequest, pageable).toList();
+        List<Event> events = eventRepository.findAllWithSearchCondition(searchCondition, pageable).toList();
 
         // then
         assertThat(events).hasSize(1)
@@ -100,11 +99,11 @@ class EventRepositoryTest extends IntegrationTestSupport {
         Event event3 = createEvent("test event 3", Category.CONCERT, "test venue 3");
         eventRepository.saveAll(List.of(event1, event2, event3));
 
-        EventSearchServiceRequest searchRequest = new EventSearchServiceRequest("", Category.CONCERT, "");
+        EventSearchCondition searchCondition = new EventSearchCondition("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").descending());
 
         // when
-        List<Event> events = eventRepository.findAllWithSearchCondition(searchRequest, pageable)
+        List<Event> events = eventRepository.findAllWithSearchCondition(searchCondition, pageable)
                 .toList();
 
         // then

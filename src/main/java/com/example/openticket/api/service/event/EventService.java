@@ -3,6 +3,7 @@ package com.example.openticket.api.service.event;
 import com.example.openticket.api.service.event.dto.request.EventSearchServiceRequest;
 import com.example.openticket.api.service.event.dto.response.EventResponse;
 import com.example.openticket.domain.event.persistence.EventRepository;
+import com.example.openticket.domain.event.persistence.EventSearchCondition;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,7 @@ public class EventService {
     private final EventRepository eventRepository;
 
     public List<EventResponse> searchEvents(EventSearchServiceRequest request, Pageable pageable) {
-        return eventRepository.findAllWithSearchCondition(request, pageable)
+        return eventRepository.findAllWithSearchCondition(request.toSearchCondition(), pageable)
                 .stream()
                 .map(EventResponse::from)
                 .toList();

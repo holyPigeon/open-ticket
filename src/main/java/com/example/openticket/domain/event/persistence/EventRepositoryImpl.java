@@ -2,7 +2,6 @@ package com.example.openticket.domain.event.persistence;
 
 import static com.example.openticket.domain.event.QEvent.event;
 
-import com.example.openticket.api.service.event.dto.request.EventSearchServiceRequest;
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -20,31 +19,31 @@ public class EventRepositoryImpl implements EventRepositoryCustom {
 
     private final JPAQueryFactory queryFactory;
 
-    public Page<Event> findAllWithSearchCondition(EventSearchServiceRequest request, Pageable pageable) {
+    public Page<Event> findAllWithSearchCondition(EventSearchCondition searchCondition, Pageable pageable) {
         List<Event> events = queryFactory
                 .selectFrom(event)
                 .where(
-                        titleContains(request.title()),
-                        venueContains(request.venue()),
-                        categoryEq(request.category())
+                        titleContains(searchCondition.title()),
+                        venueContains(searchCondition.venue()),
+                        categoryEq(searchCondition.category())
                 )
                 .orderBy(event.id.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
-        JPAQuery<Long> countQuery = getCountQuery(request);
+        JPAQuery<Long> countQuery = getCountQuery(searchCondition);
 
         return PageableExecutionUtils.getPage(events, pageable, countQuery::fetchOne);
     }
 
-    private JPAQuery<Long> getCountQuery(EventSearchServiceRequest request) {
+    private JPAQuery<Long> getCountQuery(EventSearchCondition searchCondition) {
         return queryFactory
                 .select(event.count())
                 .from(event)
                 .where(
-                        titleContains(request.title()),
-                        venueContains(request.venue()),
-                        categoryEq(request.category())
+                        titleContains(searchCondition.title()),
+                        venueContains(searchCondition.venue()),
+                        categoryEq(searchCondition.category())
                 );
     }
 
