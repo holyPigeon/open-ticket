@@ -21,12 +21,12 @@ class SeatTest {
 
     @DisplayName("좌석을 예약하면 좌석 상태가 예약됨으로 변경된다.")
     @Test
-    void reserveWhenSeatStatusAvailable() {
+    void bookWhenSeatStatusAvailable() {
         // given
         Seat seat = createSeat();
 
         // when
-        seat.reserve();
+        seat.book();
 
         // then
         assertThat(seat.getStatus()).isEqualTo(SeatStatus.BOOKED);
@@ -37,23 +37,23 @@ class SeatTest {
     void throwExceptionWhenSeatStatusNotAvailable() {
         // given
         Seat seat = createSeat();
-        seat.reserve();
+        seat.book();
 
         // when, then
-        assertThatThrownBy(seat::reserve)
+        assertThatThrownBy(seat::book)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("예약할 수 없는 좌석입니다.");
     }
 
     @DisplayName("예약을 취소하면 좌석 상태가 예약 가능으로 변경된다.")
     @Test
-    void cancelReservation() {
+    void cancelBooking() {
         // given
         Seat seat = createSeat();
-        seat.reserve();
+        seat.book();
 
         // when
-        seat.cancelReservation();
+        seat.cancelBooking();
 
         // then
         assertThat(seat.getStatus()).isEqualTo(SeatStatus.AVAILABLE);
@@ -61,16 +61,16 @@ class SeatTest {
 
     @DisplayName("예약 완료 상태가 아닌 좌석에 대해 예약을 취소하려 할 경우, 예외가 발생한다.")
     @Test
-    void cancelReservationException1() {
+    void cancelBookingException1() {
         // given
         Seat seat = createSeat();
-        seat.reserve();
+        seat.book();
 
         // when
-        seat.cancelReservation();
+        seat.cancelBooking();
 
         // when, then
-        assertThatThrownBy(seat::cancelReservation)
+        assertThatThrownBy(seat::cancelBooking)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("예약 취소할 수 없는 좌석입니다.");
     }

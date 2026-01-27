@@ -58,7 +58,7 @@ public class Booking extends BaseEntity {
         this.status = BookingStatus.BOOKED;
         this.bookingSeats = seats.stream()
                 .map(seat -> {
-                    seat.reserve();
+                    seat.book();
                     return new BookingSeat(this, seat);
                 }).collect(Collectors.toList());
     }
@@ -72,7 +72,7 @@ public class Booking extends BaseEntity {
             throw new IllegalStateException("취소할 수 없는 예약 상태입니다.");
         }
         this.status = BookingStatus.CANCELLED;
-        bookingSeats.forEach(bookingSeat -> bookingSeat.getSeat().cancelReservation());
+        bookingSeats.forEach(bookingSeat -> bookingSeat.getSeat().cancelBooking());
     }
 
     public boolean isCancelled() {
