@@ -4,8 +4,8 @@ import com.example.openticket.api.ApiResponse;
 import com.example.openticket.api.controller.event.dto.request.EventSearchRequest;
 import com.example.openticket.api.service.event.EventService;
 import com.example.openticket.api.service.event.dto.response.EventResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -21,7 +21,7 @@ public class EventController {
     private final EventService eventService;
 
     @GetMapping("/api/v1/events")
-    public ApiResponse<List<EventResponse>> searchEvents(
+    public ApiResponse<Page<EventResponse>> searchEvents(
             @ModelAttribute EventSearchRequest request,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
