@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
 import java.time.LocalDateTime;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,7 @@ class SeatTest {
         seat.reserve();
 
         // then
-        assertThat(seat.getStatus()).isEqualTo(SeatStatus.RESERVED);
+        assertThat(seat.getStatus()).isEqualTo(SeatStatus.BOOKED);
     }
 
     @DisplayName("예약 가능 상태가 아닌 좌석을 예약하려 할 경우, 예외가 발생한다.")
