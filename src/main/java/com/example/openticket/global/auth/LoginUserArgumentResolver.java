@@ -7,6 +7,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
@@ -31,7 +32,12 @@ public class LoginUserArgumentResolver implements HandlerMethodArgumentResolver 
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory
     ) {
+        Long userId = (Long) webRequest.getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+        if (userId == null) {
+            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+        }
+
         return userRepository.findById(1L)
-                .orElseThrow(() -> new IllegalArgumentException("테스트용 1번 유저가 DB에 없습니다. data.sql을 확인하세요."));
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
     }
 }
