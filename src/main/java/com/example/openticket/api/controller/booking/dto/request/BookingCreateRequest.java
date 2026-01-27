@@ -8,7 +8,6 @@ public record BookingCreateRequest(
         Long eventId
 ) {
     public BookingCreateServiceRequest toServiceRequest() {
-        return new BookingCreateServiceRequest(this.seatIds, this.eventId
-        );
+        return new BookingCreateServiceRequest(this.seatIds);
     }
 }
