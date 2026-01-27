@@ -3,7 +3,7 @@ package com.example.openticket.domain.booking;
 import static com.example.openticket.domain.booking.BookingStatus.BOOKED;
 import static org.assertj.core.groups.Tuple.tuple;
 
-import com.example.openticket.IntegrationTestSupport;
+import com.example.openticket.support.IntegrationTestSupport;
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
 import com.example.openticket.domain.event.persistence.EventRepository;

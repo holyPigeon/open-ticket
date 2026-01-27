@@ -3,7 +3,7 @@ package com.example.openticket.domain.event.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-import com.example.openticket.IntegrationTestSupport;
+import com.example.openticket.support.IntegrationTestSupport;
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
 import java.time.LocalDateTime;

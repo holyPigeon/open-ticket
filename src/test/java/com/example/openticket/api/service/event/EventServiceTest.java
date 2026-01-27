@@ -3,7 +3,7 @@ package com.example.openticket.api.service.event;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-import com.example.openticket.IntegrationTestSupport;
+import com.example.openticket.support.IntegrationTestSupport;
 import com.example.openticket.api.service.event.dto.request.EventSearchServiceRequest;
 import com.example.openticket.api.service.event.dto.response.EventResponse;
 import com.example.openticket.domain.event.Category;

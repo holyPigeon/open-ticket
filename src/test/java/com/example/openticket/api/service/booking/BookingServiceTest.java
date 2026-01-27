@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
-import com.example.openticket.IntegrationTestSupport;
+import com.example.openticket.support.IntegrationTestSupport;
 import com.example.openticket.api.service.booking.dto.request.BookingCreateServiceRequest;
 import com.example.openticket.api.service.booking.dto.response.BookingResponse;
 import com.example.openticket.domain.booking.Booking;

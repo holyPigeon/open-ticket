@@ -1,4 +1,4 @@
-package com.example.openticket;
+package com.example.openticket.support;
 
 import com.example.openticket.config.QueryDslConfig;
 import org.springframework.boot.test.context.SpringBootTest;
