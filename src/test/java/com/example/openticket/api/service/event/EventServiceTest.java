@@ -30,9 +30,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsByCategory() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10);
@@ -44,8 +44,8 @@ class EventServiceTest extends IntegrationTestSupport {
         assertThat(result.getContent()).hasSize(2)
                 .extracting("title", "category", "venue")
                 .containsExactlyInAnyOrder(
-                        tuple("test event 1", Category.CONCERT, "test venue 1"),
-                        tuple("test event 3", Category.CONCERT, "test venue 3")
+                        tuple("event 1", Category.CONCERT, "venue 1"),
+                        tuple("event 3", Category.CONCERT, "venue 3")
                 );
     }
 
@@ -53,11 +53,11 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsByTitle() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
-        EventSearchServiceRequest request = new EventSearchServiceRequest("test event 1", null, "");
+        EventSearchServiceRequest request = new EventSearchServiceRequest("event 1", null, "");
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
@@ -67,7 +67,7 @@ class EventServiceTest extends IntegrationTestSupport {
         assertThat(result.getContent()).hasSize(1)
                 .extracting("title", "category", "venue")
                 .containsExactly(
-                        tuple("test event 1", Category.CONCERT, "test venue 1")
+                        tuple("event 1", Category.CONCERT, "venue 1")
                 );
     }
 
@@ -75,11 +75,11 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsByVenue() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
-        EventSearchServiceRequest request = new EventSearchServiceRequest("", null, "test venue 1");
+        EventSearchServiceRequest request = new EventSearchServiceRequest("", null, "venue 1");
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
@@ -89,7 +89,7 @@ class EventServiceTest extends IntegrationTestSupport {
         assertThat(result.getContent()).hasSize(1)
                 .extracting("title", "category", "venue")
                 .containsExactly(
-                        tuple("test event 1", Category.CONCERT, "test venue 1")
+                        tuple("event 1", Category.CONCERT, "venue 1")
                 );
     }
 
@@ -97,9 +97,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsWithSort() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").descending());
@@ -111,8 +111,8 @@ class EventServiceTest extends IntegrationTestSupport {
         assertThat(result.getContent()).hasSize(2)
                 .extracting("title", "category", "venue")
                 .containsExactly(
-                        tuple("test event 3", Category.CONCERT, "test venue 3"),
-                        tuple("test event 1", Category.CONCERT, "test venue 1")
+                        tuple("event 3", Category.CONCERT, "venue 3"),
+                        tuple("event 1", Category.CONCERT, "venue 1")
                 );
     }
 
@@ -120,9 +120,9 @@ class EventServiceTest extends IntegrationTestSupport {
     @Test
     void searchEventsWithNoResult() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
         EventSearchServiceRequest request = new EventSearchServiceRequest("없는 제목", null, "");
 

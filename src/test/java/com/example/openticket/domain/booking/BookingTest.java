@@ -133,19 +133,19 @@ class BookingTest {
 
     private User createSampleUser() {
         return User.builder()
-                .name("test user 1")
-                .email("test email 1")
-                .password("test password 1")
+                .name("user 1")
+                .email("email 1")
+                .password("password 1")
                 .build();
     }
 
     private Event createSampleEvent() {
         return Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
-                .venue("test venue 1")
+                .venue("venue 1")
                 .build();
     }
 }

@@ -53,9 +53,9 @@ class SeatRepositoryTest extends IntegrationTestSupport {
 
     private Event saveSampleEvent() {
         Event event = Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
-                .venue("test venue 1")
+                .venue("venue 1")
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
                 .build();

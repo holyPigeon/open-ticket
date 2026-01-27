@@ -24,9 +24,9 @@ class EventTest {
         // when, then
         assertThatNoException().isThrownBy(() -> {
             Event.builder()
-                    .title("test event 1")
+                    .title("event 1")
                     .category(Category.CONCERT)
-                    .venue("test venue 1")
+                    .venue("venue 1")
                     .startAt(startAt)
                     .endAt(endAt)
                     .build();
@@ -40,9 +40,9 @@ class EventTest {
     void createEventFail1(LocalDateTime startAt, LocalDateTime endAt) {
         // given
         EventBuilder eventBuilder = Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
-                .venue("test venue 1")
+                .venue("venue 1")
                 .startAt(startAt)
                 .endAt(endAt);
 
@@ -60,9 +60,9 @@ class EventTest {
         LocalDateTime endAt = LocalDateTime.of(2026, 1, 1, 0, 0);
 
         EventBuilder eventBuilder = Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
-                .venue("test venue 1")
+                .venue("venue 1")
                 .startAt(startAt)
                 .endAt(endAt);
 

@@ -36,8 +36,8 @@ class BookingRepositoryTest extends IntegrationTestSupport {
     @Test
     void findByUserId() {
         // given
-        User user1 = saveUser("test user 1", "test email 1", "test password 1");
-        User user2 = saveUser("test user 2", "test email 2", "test password 2");
+        User user1 = saveUser("user 1", "email 1", "password 1");
+        User user2 = saveUser("user 2", "email 2", "password 2");
         Event event = saveSampleEvent();
 
         LocalDateTime now = LocalDateTime.now();
@@ -87,9 +87,9 @@ class BookingRepositoryTest extends IntegrationTestSupport {
 
     private Event saveSampleEvent() {
         Event event = Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
-                .venue("test venue 1")
+                .venue("venue 1")
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
                 .build();

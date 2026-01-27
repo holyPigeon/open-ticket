@@ -24,9 +24,9 @@ class EventRepositoryTest extends IntegrationTestSupport {
     @Test
     void findAllWithSearchCondition1() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
         EventSearchCondition searchCondition = new EventSearchCondition("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10);
@@ -38,8 +38,8 @@ class EventRepositoryTest extends IntegrationTestSupport {
         assertThat(events).hasSize(2)
                 .extracting("title", "category", "venue")
                 .containsExactlyInAnyOrder(
-                        tuple("test event 1", Category.CONCERT, "test venue 1"),
-                        tuple("test event 3", Category.CONCERT, "test venue 3")
+                        tuple("event 1", Category.CONCERT, "venue 1"),
+                        tuple("event 3", Category.CONCERT, "venue 3")
                 );
     }
 
@@ -47,11 +47,11 @@ class EventRepositoryTest extends IntegrationTestSupport {
     @Test
     void findAllWithSearchCondition2() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
-        EventSearchCondition searchCondition = new EventSearchCondition("test event 1", null, "");
+        EventSearchCondition searchCondition = new EventSearchCondition("event 1", null, "");
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
@@ -61,7 +61,7 @@ class EventRepositoryTest extends IntegrationTestSupport {
         assertThat(events).hasSize(1)
                 .extracting("title", "category", "venue")
                 .containsExactly(
-                        tuple("test event 1", Category.CONCERT, "test venue 1")
+                        tuple("event 1", Category.CONCERT, "venue 1")
                 );
     }
 
@@ -69,11 +69,11 @@ class EventRepositoryTest extends IntegrationTestSupport {
     @Test
     void findAllWithSearchCondition3() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
-        EventSearchCondition searchCondition = new EventSearchCondition("", null, "test venue 1");
+        EventSearchCondition searchCondition = new EventSearchCondition("", null, "venue 1");
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
@@ -83,7 +83,7 @@ class EventRepositoryTest extends IntegrationTestSupport {
         assertThat(events).hasSize(1)
                 .extracting("title", "category", "venue")
                 .containsExactly(
-                        tuple("test event 1", Category.CONCERT, "test venue 1")
+                        tuple("event 1", Category.CONCERT, "venue 1")
                 );
     }
 
@@ -91,9 +91,9 @@ class EventRepositoryTest extends IntegrationTestSupport {
     @Test
     void findAllWithSearchCondition4() {
         // given
-        saveEvent("test event 1", Category.CONCERT, "test venue 1");
-        saveEvent("test event 2", Category.SPORTS, "test venue 2");
-        saveEvent("test event 3", Category.CONCERT, "test venue 3");
+        saveEvent("event 1", Category.CONCERT, "venue 1");
+        saveEvent("event 2", Category.SPORTS, "venue 2");
+        saveEvent("event 3", Category.CONCERT, "venue 3");
 
         EventSearchCondition searchCondition = new EventSearchCondition("", Category.CONCERT, "");
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").descending());
@@ -106,8 +106,8 @@ class EventRepositoryTest extends IntegrationTestSupport {
         assertThat(events).hasSize(2)
                 .extracting("title", "category", "venue")
                 .containsExactly(
-                        tuple("test event 3", Category.CONCERT, "test venue 3"),
-                        tuple("test event 1", Category.CONCERT, "test venue 1")
+                        tuple("event 3", Category.CONCERT, "venue 3"),
+                        tuple("event 1", Category.CONCERT, "venue 1")
                 );
     }
 

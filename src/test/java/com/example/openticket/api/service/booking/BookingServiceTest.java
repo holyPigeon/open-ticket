@@ -162,9 +162,9 @@ class BookingServiceTest extends IntegrationTestSupport {
 
     private User saveSampleUser() {
         User user = User.builder()
-                .name("test user 1")
-                .email("test email 1")
-                .password("test password 1")
+                .name("user 1")
+                .email("email 1")
+                .password("password 1")
                 .build();
 
         return userRepository.save(user);
@@ -172,9 +172,9 @@ class BookingServiceTest extends IntegrationTestSupport {
 
     private Event saveSampleEvent() {
         Event event = Event.builder()
-                .title("아이유 콘서트")
+                .title("event 1")
                 .category(Category.CONCERT)
-                .venue("상암 월드컵 경기장")
+                .venue("venue 1")
                 .startAt(LocalDateTime.now().plusDays(1))
                 .endAt(LocalDateTime.now().plusDays(1).plusHours(2))
                 .build();
