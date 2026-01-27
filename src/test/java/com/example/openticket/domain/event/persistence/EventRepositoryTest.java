@@ -17,8 +17,7 @@ import org.springframework.data.domain.Sort;
 
 class EventRepositoryTest extends IntegrationTestSupport {
 
-    @Autowired
-    private EventRepository eventRepository;
+    @Autowired EventRepository eventRepository;
 
     @DisplayName("카테고리에 따라 이벤트들을 조회할 수 있다.")
     @Test
