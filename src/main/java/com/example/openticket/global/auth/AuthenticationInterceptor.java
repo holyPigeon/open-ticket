@@ -1,5 +1,6 @@
 package com.example.openticket.global.auth;
 
+import com.example.openticket.global.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +22,11 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         if (StringUtils.hasText(token) && jwtProvider.validateToken(token)) {
             Long userId = jwtProvider.getUserId(token);
             request.setAttribute("userId", userId);
+
             return true;
         }
 
-        // 4. 검증 실패 시 401 에러 반환 (예외를 던져서 @ExceptionHandler로 처리해도 됨)
-        throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        throw new UnauthorizedException("유효하지 않은 토큰입니다.");
     }
 
     private String resolveToken(HttpServletRequest request) {
@@ -33,6 +34,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
             return bearerToken.substring(7);
         }
+
         return null;
     }
 }
