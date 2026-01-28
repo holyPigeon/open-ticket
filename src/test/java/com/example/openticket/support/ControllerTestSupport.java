@@ -5,6 +5,7 @@ import com.example.openticket.api.controller.event.EventController;
 import com.example.openticket.api.service.auth.AuthService;
 import com.example.openticket.api.service.booking.BookingService;
 import com.example.openticket.api.service.event.EventService;
+import com.example.openticket.domain.user.UserRepository;
 import com.example.openticket.global.auth.JwtProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,6 +34,9 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected AuthService authService;
+
+    @MockitoBean
+    protected UserRepository userRepository;
 
     // 인증 관련 Mock (Interceptor가 사용)
     @MockitoBean
