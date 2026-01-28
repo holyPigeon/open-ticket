@@ -1,5 +1,6 @@
 package com.example.openticket.api;
 
+import com.example.openticket.global.exception.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,4 +20,13 @@ public class ApiControllerAdvice {
         );
     }
 
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(UnauthorizedException.class)
+    public ApiResponse<Object> handleUnAuthorizedException(UnauthorizedException e) {
+        return ApiResponse.of(
+                HttpStatus.UNAUTHORIZED,
+                e.getMessage(),
+                null
+        );
+    }
 }
