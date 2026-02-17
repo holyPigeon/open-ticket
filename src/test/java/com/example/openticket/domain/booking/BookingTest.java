@@ -1,6 +1,7 @@
 package com.example.openticket.domain.booking;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.openticket.domain.event.Category;
 import com.example.openticket.domain.event.Event;
@@ -19,8 +20,8 @@ class BookingTest {
 
     @BeforeEach
     void setUp() {
-        user = createUser();
-        event = createEvent();
+        user = createSampleUser();
+        event = createSampleEvent();
     }
     
     @DisplayName("예약 생성 시, 예약하려는 좌석 리스트의 총 가격을 계산한다.")
@@ -67,6 +68,49 @@ class BookingTest {
         assertThat(booking.getStatus()).isEqualTo(BookingStatus.BOOKED);
     }
 
+    @DisplayName("예약을 취소하면 예약 상태가 취소로 변경된다.")
+    @Test
+    void cancel() {
+        // given
+        Booking booking = createDefaultBooking();
+
+        // when
+        booking.cancel();
+
+        // then
+        assertThat(booking.getStatus()).isEqualTo(BookingStatus.CANCELLED);
+    }
+
+    @DisplayName("예약 상태가 아닌 예약을 취소하려 할 때, 예외가 발생한다.")
+    @Test
+    void cancelException1() {
+        // given
+        Booking booking = createDefaultBooking();
+        booking.cancel();
+
+        // when, then
+        assertThatThrownBy(booking::cancel)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("취소할 수 없는 예약 상태입니다.");
+    }
+
+    @DisplayName("")
+    @Test
+    void isCancelled() {
+        // given
+        Booking booking = createDefaultBooking();
+
+        // when
+        booking.cancel();
+
+        // then
+        assertThat(booking.isCancelled()).isTrue();
+    }
+
+    private Booking createDefaultBooking() {
+        return createBooking(LocalDateTime.now(), createDefaultSeats());
+    }
+
     private Booking createBooking(LocalDateTime bookedAt, List<Seat> seats) {
         return Booking.create(user, bookedAt, seats);
     }
@@ -87,19 +131,21 @@ class BookingTest {
                 .build();
     }
 
-    private User createUser() {
+    private User createSampleUser() {
         return User.builder()
-                .name("test user 1")
+                .name("user 1")
+                .email("email 1")
+                .password("password 1")
                 .build();
     }
 
-    private Event createEvent() {
+    private Event createSampleEvent() {
         return Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
-                .venue("test venue 1")
+                .venue("venue 1")
                 .build();
     }
 }

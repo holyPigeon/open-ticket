@@ -8,8 +8,8 @@ import lombok.RequiredArgsConstructor;
 public enum SeatStatus {
 
     AVAILABLE("예약 가능"),
-    RESERVED("예약중"),
-    SOLD("판매 완료");
+    BOOKED("예약중");
+//    SOLD("판매 완료");
 
     private final String name;
 

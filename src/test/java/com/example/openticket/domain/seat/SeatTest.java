@@ -19,35 +19,61 @@ class SeatTest {
         event = createEvent();
     }
 
-    @DisplayName("좌석이 예약 가능 상태일 경우, 예약할 수 있다.")
+    @DisplayName("좌석을 예약하면 좌석 상태가 예약됨으로 변경된다.")
     @Test
-    void reserveWhenSeatStatusAvailable() {
+    void bookWhenSeatStatusAvailable() {
         // given
         Seat seat = createSeat();
 
         // when
-        seat.reserve();
+        seat.book();
 
         // then
-        assertThat(seat.getStatus()).isEqualTo(SeatStatus.RESERVED);
+        assertThat(seat.getStatus()).isEqualTo(SeatStatus.BOOKED);
     }
 
-    @DisplayName("좌석이 예약 가능 상태가 아닐 경우, 예외가 발생한다.")
+    @DisplayName("예약 가능 상태가 아닌 좌석을 예약하려 할 경우, 예외가 발생한다.")
     @Test
     void throwExceptionWhenSeatStatusNotAvailable() {
         // given
         Seat seat = createSeat();
+        seat.book();
 
-        // when
-        seat.reserve();
-
-        // then
-        assertThatThrownBy(() -> seat.reserve())
+        // when, then
+        assertThatThrownBy(seat::book)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("예약할 수 없는 좌석입니다.");
     }
 
+    @DisplayName("예약을 취소하면 좌석 상태가 예약 가능으로 변경된다.")
+    @Test
+    void cancelBooking() {
+        // given
+        Seat seat = createSeat();
+        seat.book();
 
+        // when
+        seat.cancelBooking();
+
+        // then
+        assertThat(seat.getStatus()).isEqualTo(SeatStatus.AVAILABLE);
+    }
+
+    @DisplayName("예약 완료 상태가 아닌 좌석에 대해 예약을 취소하려 할 경우, 예외가 발생한다.")
+    @Test
+    void cancelBookingException1() {
+        // given
+        Seat seat = createSeat();
+        seat.book();
+
+        // when
+        seat.cancelBooking();
+
+        // when, then
+        assertThatThrownBy(seat::cancelBooking)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("예약 취소할 수 없는 좌석입니다.");
+    }
 
     private Seat createSeat() {
         return Seat.builder()
@@ -59,11 +85,11 @@ class SeatTest {
 
     private Event createEvent() {
         return Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
                 .startAt(LocalDateTime.of(2026, 1, 1, 0, 0))
                 .endAt(LocalDateTime.of(2027, 1, 1, 0, 0))
-                .venue("test venue 1")
+                .venue("venue 1")
                 .build();
     }
 }

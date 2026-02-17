@@ -1,4 +1,4 @@
-package com.example.openticket.config;
+package com.example.openticket.global.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

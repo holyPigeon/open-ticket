@@ -21,12 +21,12 @@ class EventTest {
         LocalDateTime startAt = LocalDateTime.of(2026, 1, 1, 0, 0);
         LocalDateTime endAt = LocalDateTime.of(2027, 1, 1, 0, 0);
 
-        // when & then
+        // when, then
         assertThatNoException().isThrownBy(() -> {
             Event.builder()
-                    .title("test event 1")
+                    .title("event 1")
                     .category(Category.CONCERT)
-                    .venue("test venue 1")
+                    .venue("venue 1")
                     .startAt(startAt)
                     .endAt(endAt)
                     .build();
@@ -40,19 +40,16 @@ class EventTest {
     void createEventFail1(LocalDateTime startAt, LocalDateTime endAt) {
         // given
         EventBuilder eventBuilder = Event.builder()
-                .title("test event 1")
+                .title("event 1")
                 .category(Category.CONCERT)
-                .venue("test venue 1");
+                .venue("venue 1")
+                .startAt(startAt)
+                .endAt(endAt);
 
-        // when & then
-        assertThatThrownBy(() -> {
-            eventBuilder
-                    .startAt(startAt)
-                    .endAt(endAt)
-                    .build();
-        }).isInstanceOf(IllegalArgumentException.class)
+        // when, then
+        assertThatThrownBy(eventBuilder::build)
+                .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("시작 시간 및 종료 시간은 null일 수 없습니다.");
-
     }
 
     @DisplayName("이벤트의 시작 시간이 종료 시간 이전이 아닌 경우, 예외가 발생한다.")
@@ -62,18 +59,17 @@ class EventTest {
         LocalDateTime startAt = LocalDateTime.of(2027, 1, 1, 0, 0);
         LocalDateTime endAt = LocalDateTime.of(2026, 1, 1, 0, 0);
 
-        // when & then
-        assertThatThrownBy(() -> {
-            Event.builder()
-                    .title("test event 1")
-                    .category(Category.CONCERT)
-                    .venue("test venue 1")
-                    .startAt(startAt)
-                    .endAt(endAt)
-                    .build();
-        }).isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("시작 시간은 종료 시간보다 이전이어야 합니다.");
+        EventBuilder eventBuilder = Event.builder()
+                .title("event 1")
+                .category(Category.CONCERT)
+                .venue("venue 1")
+                .startAt(startAt)
+                .endAt(endAt);
 
+        // when, then
+        assertThatThrownBy(eventBuilder::build)
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("시작 시간은 종료 시간보다 이전이어야 합니다.");
     }
 
     static Stream<Arguments> invalidDateTimes() {

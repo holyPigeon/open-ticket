@@ -56,15 +56,27 @@ public class Booking extends BaseEntity {
         this.totalPrice = calculateTotalPrice(seats);
         this.bookedAt = bookedAt;
         this.status = BookingStatus.BOOKED;
-        this.bookingSeats = seats.stream()
-                .map(seat -> {
-                    seat.reserve();
-                    return new BookingSeat(this, seat);
-                }).collect(Collectors.toList());
+
+        seats.forEach(seat -> {
+            seat.book();
+            this.bookingSeats.add(new BookingSeat(this, seat));
+        });
     }
 
     public static Booking create(User user, LocalDateTime bookedAt, List<Seat> seats) {
         return new Booking(user, bookedAt, seats);
+    }
+
+    public void cancel() {
+        if (this.status != BookingStatus.BOOKED) {
+            throw new IllegalStateException("취소할 수 없는 예약 상태입니다.");
+        }
+        this.status = BookingStatus.CANCELLED;
+        bookingSeats.forEach(bookingSeat -> bookingSeat.getSeat().cancelBooking());
+    }
+
+    public boolean isCancelled() {
+        return this.status == BookingStatus.CANCELLED;
     }
 
     private int calculateTotalPrice(List<Seat> seats) {
