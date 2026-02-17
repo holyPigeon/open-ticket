@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo view:*)",
+      "Bash(gh auth refresh:*)",
+      "Bash(git -C /Users/kevin/project/2026/open-ticket diff --name-status)",
+      "Bash(git -C /Users/kevin/project/2026/open-ticket log --oneline -5)",
+      "Bash(git -C /Users/kevin/project/2026/open-ticket reset HEAD -- .)",
+      "Bash(git -C /Users/kevin/project/2026/open-ticket add .github/workflows/claude.yml)",
+      "Bash(git -C:*)"
+    ]
+  }
+}
