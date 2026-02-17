@@ -1,6 +1,7 @@
 package com.example.openticket.api.controller.booking;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -42,6 +43,7 @@ class BookingControllerTest extends ControllerTestSupport {
         ReflectionTestUtils.setField(mockUser, "id", 1L);
 
         given(userRepository.findById(1L)).willReturn(Optional.of(mockUser));
+        given(eventQueueManager.consumeActiveToken(anyLong(), anyString())).willReturn(true);
     }
 
     @DisplayName("신규 예약을 생성한다.")
@@ -59,6 +61,8 @@ class BookingControllerTest extends ControllerTestSupport {
         mockMvc.perform(
                         post("/api/v1/bookings")
                                 .header("Authorization", ACCESS_TOKEN)
+                                .header("X-Queue-Token", "test-queue-token")
+                                .header("X-Event-Id", "1")
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -79,6 +83,8 @@ class BookingControllerTest extends ControllerTestSupport {
         mockMvc.perform(
                         post("/api/v1/bookings")
                                 .header("Authorization", ACCESS_TOKEN)
+                                .header("X-Queue-Token", "test-queue-token")
+                                .header("X-Event-Id", "1")
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
