@@ -1,5 +1,9 @@
 # CLAUDE.md
 
+## Git
+
+- Default branch: `develop`
+
 ## Build & Test Commands
 
 ```bash
