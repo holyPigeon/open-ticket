@@ -4,8 +4,9 @@ import com.example.openticket.api.ApiResponse;
 import com.example.openticket.api.controller.booking.dto.request.BookingCreateRequest;
 import com.example.openticket.api.service.booking.BookingService;
 import com.example.openticket.api.service.booking.dto.response.BookingResponse;
-import com.example.openticket.global.auth.LoginUser;
 import com.example.openticket.domain.user.User;
+import com.example.openticket.global.auth.LoginUser;
+import com.example.openticket.global.queue.CheckQueueToken;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +24,7 @@ public class BookingController {
 
     private final BookingService bookingService;
 
+    @CheckQueueToken
     @PostMapping("/api/v1/bookings")
     public ApiResponse<BookingResponse> createBooking(
             @LoginUser User user,

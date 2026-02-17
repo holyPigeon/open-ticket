@@ -2,6 +2,7 @@ package com.example.openticket.global.config;
 
 import com.example.openticket.global.auth.AuthenticationInterceptor;
 import com.example.openticket.global.auth.LoginUserArgumentResolver;
+import com.example.openticket.global.queue.QueueValidationInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -16,6 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final LoginUserArgumentResolver loginUserArgumentResolver;
     private final AuthenticationInterceptor authenticationInterceptor;
+    private final QueueValidationInterceptor queueValidationInterceptor;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
@@ -31,5 +33,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/v1/users/signup",
                         "/api/v1/events/**"
                 );
+
+        registry.addInterceptor(queueValidationInterceptor)
+                .addPathPatterns("/api/v1/**");
     }
 }
