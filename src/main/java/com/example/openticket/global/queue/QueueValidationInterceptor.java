@@ -1,0 +1,48 @@
+package com.example.openticket.global.queue;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+@Component
+@RequiredArgsConstructor
+public class QueueValidationInterceptor implements HandlerInterceptor {
+
+    private static final String QUEUE_TOKEN_HEADER = "X-Queue-Token";
+    private static final String EVENT_ID_HEADER = "X-Event-Id";
+
+    private final EventQueueManager eventQueueManager;
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        if (!(handler instanceof HandlerMethod handlerMethod)) {
+            return true;
+        }
+
+        CheckQueueToken annotation = handlerMethod.getMethodAnnotation(CheckQueueToken.class);
+        if (annotation == null) {
+            return true;
+        }
+
+        String token = request.getHeader(QUEUE_TOKEN_HEADER);
+        if (!StringUtils.hasText(token)) {
+            throw new IllegalStateException("대기열 토큰이 필요합니다.");
+        }
+
+        String eventIdStr = request.getHeader(EVENT_ID_HEADER);
+        if (!StringUtils.hasText(eventIdStr)) {
+            throw new IllegalStateException("이벤트 ID가 필요합니다.");
+        }
+
+        Long eventId = Long.parseLong(eventIdStr);
+        if (!eventQueueManager.consumeActiveToken(eventId, token)) {
+            throw new IllegalStateException("대기열 토큰이 유효하지 않거나 만료되었습니다.");
+        }
+
+        return true;
+    }
+}
