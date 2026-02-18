@@ -3,10 +3,12 @@ package com.example.openticket.support;
 import com.example.openticket.api.controller.booking.BookingController;
 import com.example.openticket.api.controller.event.EventController;
 import com.example.openticket.api.controller.queue.QueueController;
+import com.example.openticket.api.controller.seat.SeatController;
 import com.example.openticket.api.service.auth.AuthService;
 import com.example.openticket.api.service.booking.BookingService;
 import com.example.openticket.api.service.event.EventService;
 import com.example.openticket.api.service.queue.QueueService;
+import com.example.openticket.api.service.seat.SeatService;
 import com.example.openticket.domain.user.UserRepository;
 import com.example.openticket.global.auth.JwtProvider;
 import com.example.openticket.global.queue.EventQueueManager;
@@ -19,7 +21,8 @@ import tools.jackson.databind.ObjectMapper;
 @WebMvcTest(controllers = {
         BookingController.class,
         EventController.class,
-        QueueController.class
+        QueueController.class,
+        SeatController.class
 })
 public abstract class ControllerTestSupport {
 
@@ -41,6 +44,9 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected QueueService queueService;
+
+    @MockitoBean
+    protected SeatService seatService;
 
     @MockitoBean
     protected UserRepository userRepository;
