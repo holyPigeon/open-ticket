@@ -82,6 +82,15 @@ public class EventQueueManager {
         throw new IllegalArgumentException("유효하지 않은 대기열 토큰입니다.");
     }
 
+    public boolean validate(Long eventId, String token) {
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.get(eventId);
+        if (activeTokensByEvent == null) {
+            return false;
+        }
+        QueueToken queueToken = activeTokensByEvent.get(token);
+        return queueToken != null && queueToken.expiresAt() >= System.currentTimeMillis();
+    }
+
     public boolean consumeActiveToken(Long eventId, String token) {
         ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.get(eventId);
         if (activeTokensByEvent == null) {
