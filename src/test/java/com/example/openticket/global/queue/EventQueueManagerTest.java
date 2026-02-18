@@ -107,6 +107,31 @@ class EventQueueManagerTest {
         assertThat(result).isFalse();
     }
 
+    @DisplayName("유효한 활성 토큰을 validate하면 true를 반환하고 토큰이 유지된다.")
+    @Test
+    void validate_activeToken_returnsTrueAndPreservesToken() {
+        // given
+        Long eventId = 1L;
+        QueueEntry entry = manager.enter(eventId, 1L);
+
+        // when
+        boolean result = manager.validate(eventId, entry.token());
+
+        // then
+        assertThat(result).isTrue();
+        assertThat(manager.check(eventId, entry.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
+    }
+
+    @DisplayName("존재하지 않는 토큰을 validate하면 false를 반환한다.")
+    @Test
+    void validate_invalidToken_returnsFalse() {
+        // when
+        boolean result = manager.validate(1L, "invalid-token");
+
+        // then
+        assertThat(result).isFalse();
+    }
+
     @DisplayName("대기열에서 위치가 정확하게 반환된다.")
     @Test
     void checkStatus_waitingUsers_correctPositions() {
