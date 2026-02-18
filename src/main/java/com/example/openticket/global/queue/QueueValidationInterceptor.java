@@ -39,7 +39,10 @@ public class QueueValidationInterceptor implements HandlerInterceptor {
         }
 
         Long eventId = Long.parseLong(eventIdStr);
-        if (!eventQueueManager.consumeActiveToken(eventId, token)) {
+        boolean valid = annotation.consume()
+                ? eventQueueManager.consumeActiveToken(eventId, token)
+                : eventQueueManager.validate(eventId, token);
+        if (!valid) {
             throw new IllegalStateException("대기열 토큰이 유효하지 않거나 만료되었습니다.");
         }
 
