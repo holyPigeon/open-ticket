@@ -4,6 +4,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -112,5 +114,75 @@ class BookingControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.code").value("401"))
                 .andExpect(jsonPath("$.status").value("401 UNAUTHORIZED"))
                 .andExpect(jsonPath("$.message").value("유효하지 않은 토큰입니다."));
+    }
+
+    @DisplayName("사용자의 예약 목록을 조회한다.")
+    @Test
+    void getUserBookings() throws Exception {
+        // given
+        given(bookingService.getUserBookings(any(User.class)))
+                .willReturn(List.of(
+                        new BookingResponse(1L, null, List.of(), LocalDateTime.now(), 10000, BookingStatus.BOOKED),
+                        new BookingResponse(2L, null, List.of(), LocalDateTime.now(), 20000, BookingStatus.BOOKED)
+                ));
+
+        // when & then
+        mockMvc.perform(
+                        get("/api/v1/bookings/my")
+                                .header("Authorization", ACCESS_TOKEN)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.status").value("200 OK"))
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.data.length()").value(2))
+                .andExpect(jsonPath("$.data[0].id").value(1))
+                .andExpect(jsonPath("$.data[1].id").value(2));
+    }
+
+    @DisplayName("예약 상세 정보를 조회한다.")
+    @Test
+    void getBookingDetails() throws Exception {
+        // given
+        given(bookingService.getBookingDetails(1L))
+                .willReturn(new BookingResponse(
+                        1L, null, List.of(), LocalDateTime.now(), 10000, BookingStatus.BOOKED
+                ));
+
+        // when & then
+        mockMvc.perform(
+                        get("/api/v1/bookings/{bookingId}", 1L)
+                                .header("Authorization", ACCESS_TOKEN)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.status").value("200 OK"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.totalPrice").value(10000))
+                .andExpect(jsonPath("$.data.status").value("BOOKED"));
+    }
+
+    @DisplayName("예약을 취소한다.")
+    @Test
+    void cancelBooking() throws Exception {
+        // given
+        given(bookingService.cancelBooking(1L))
+                .willReturn(new BookingResponse(
+                        1L, null, List.of(), LocalDateTime.now(), 10000, BookingStatus.CANCELLED
+                ));
+
+        // when & then
+        mockMvc.perform(
+                        patch("/api/v1/bookings/{bookingId}/cancel", 1L)
+                                .header("Authorization", ACCESS_TOKEN)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.status").value("200 OK"))
+                .andExpect(jsonPath("$.data.id").value(1))
+                .andExpect(jsonPath("$.data.status").value("CANCELLED"));
     }
 }
