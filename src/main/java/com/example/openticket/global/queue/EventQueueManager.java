@@ -88,6 +88,7 @@ public class EventQueueManager {
             return false;
         }
         QueueToken queueToken = activeTokensByEvent.get(token);
+
         return queueToken != null && queueToken.expiresAt() >= System.currentTimeMillis();
     }
 
