@@ -20,60 +20,59 @@ public class EventQueueManager {
     public QueueEntry enter(Long eventId, Long userId) {
         evictExpiredForEvent(eventId);
 
-        ConcurrentHashMap<String, QueueToken> active = activeTokens
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens
                 .computeIfAbsent(eventId, k -> new ConcurrentHashMap<>());
 
         // Check if user already has an active token
-        for (var entry : active.entrySet()) {
-            if (entry.getValue().userId().equals(userId)) {
-                return new QueueEntry(userId, entry.getKey(), 0, entry.getValue().expiresAt() - ACTIVE_WINDOW_MS);
+        for (var activeEntry : activeTokensByEvent.entrySet()) {
+            if (activeEntry.getValue().userId().equals(userId)) {
+                return new QueueEntry(userId, activeEntry.getKey(), 0, activeEntry.getValue().expiresAt() - ACTIVE_WINDOW_MS);
             }
         }
 
         // Check if user is already waiting
-        ConcurrentLinkedQueue<QueueEntry> queue = waitingQueues
+        ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues
                 .computeIfAbsent(eventId, k -> new ConcurrentLinkedQueue<>());
-        for (QueueEntry e : queue) {
-            if (e.userId().equals(userId)) {
-                return e;
+        for (QueueEntry waitingEntry : waitingQueueByEvent) {
+            if (waitingEntry.userId().equals(userId)) {
+                return waitingEntry;
             }
         }
 
         // Create new entry
-        long seq = sequenceCounters
-                .computeIfAbsent(eventId, k -> new AtomicLong(0))
+        long queueSequence = sequenceCounters.computeIfAbsent(eventId, k -> new AtomicLong(0))
                 .incrementAndGet();
-        String token = UUID.randomUUID().toString();
-        long now = System.currentTimeMillis();
-        QueueEntry newEntry = new QueueEntry(userId, token, seq, now);
+        String generatedToken = UUID.randomUUID().toString();
+        long currentTimeMillis = System.currentTimeMillis();
+        QueueEntry newWaitingEntry = new QueueEntry(userId, generatedToken, queueSequence, currentTimeMillis);
 
-        if (active.size() < MAX_ACTIVE_PER_EVENT) {
-            active.put(token, new QueueToken(userId, now + ACTIVE_WINDOW_MS));
+        if (activeTokensByEvent.size() < MAX_ACTIVE_PER_EVENT) {
+            activeTokensByEvent.put(generatedToken, new QueueToken(userId, currentTimeMillis + ACTIVE_WINDOW_MS));
         } else {
-            queue.add(newEntry);
+            waitingQueueByEvent.add(newWaitingEntry);
         }
 
-        return newEntry;
+        return newWaitingEntry;
     }
 
     public QueueStatus check(Long eventId, String token) {
         evictExpiredForEvent(eventId);
         promoteWaiting(eventId);
 
-        ConcurrentHashMap<String, QueueToken> active = activeTokens.get(eventId);
-        if (active != null) {
-            QueueToken queueToken = active.get(token);
-            if (queueToken != null) {
-                long remaining = Math.max(0, (queueToken.expiresAt() - System.currentTimeMillis()) / 1000);
-                return QueueStatus.allowed(token, remaining);
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.get(eventId);
+        if (activeTokensByEvent != null) {
+            QueueToken matchingActiveToken = activeTokensByEvent.get(token);
+            if (matchingActiveToken != null) {
+                long remainingSeconds = Math.max(0, (matchingActiveToken.expiresAt() - System.currentTimeMillis()) / 1000);
+                return QueueStatus.allowed(token, remainingSeconds);
             }
         }
 
-        ConcurrentLinkedQueue<QueueEntry> queue = waitingQueues.get(eventId);
-        if (queue != null) {
+        ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues.get(eventId);
+        if (waitingQueueByEvent != null) {
             int position = 1;
-            for (QueueEntry e : queue) {
-                if (e.token().equals(token)) {
+            for (QueueEntry waitingEntry : waitingQueueByEvent) {
+                if (waitingEntry.token().equals(token)) {
                     return QueueStatus.waiting(token, position);
                 }
                 position++;
@@ -84,12 +83,12 @@ public class EventQueueManager {
     }
 
     public boolean consumeActiveToken(Long eventId, String token) {
-        ConcurrentHashMap<String, QueueToken> active = activeTokens.get(eventId);
-        if (active == null) {
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.get(eventId);
+        if (activeTokensByEvent == null) {
             return false;
         }
-        QueueToken removed = active.remove(token);
-        if (removed == null || removed.expiresAt() < System.currentTimeMillis()) {
+        QueueToken consumedToken = activeTokensByEvent.remove(token);
+        if (consumedToken == null || consumedToken.expiresAt() < System.currentTimeMillis()) {
             return false;
         }
         promoteWaiting(eventId);
@@ -106,28 +105,29 @@ public class EventQueueManager {
     }
 
     private void evictExpiredForEvent(Long eventId) {
-        ConcurrentHashMap<String, QueueToken> active = activeTokens.get(eventId);
-        if (active == null) {
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = this.activeTokens.get(eventId);
+        if (activeTokensByEvent == null) {
             return;
         }
-        long now = System.currentTimeMillis();
-        active.entrySet().removeIf(e -> e.getValue().expiresAt() < now);
+        long currentTimeMillis = System.currentTimeMillis();
+        activeTokensByEvent.entrySet().removeIf(activeEntry -> activeEntry.getValue().expiresAt() < currentTimeMillis);
     }
 
     private void promoteWaiting(Long eventId) {
-        ConcurrentLinkedQueue<QueueEntry> queue = waitingQueues.get(eventId);
-        if (queue == null) {
+        ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues.get(eventId);
+        if (waitingQueueByEvent == null) {
             return;
         }
-        ConcurrentHashMap<String, QueueToken> active = activeTokens
-                .computeIfAbsent(eventId, k -> new ConcurrentHashMap<>());
-        long now = System.currentTimeMillis();
-        while (active.size() < MAX_ACTIVE_PER_EVENT) {
-            QueueEntry head = queue.poll();
-            if (head == null) {
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.computeIfAbsent(
+                eventId, k -> new ConcurrentHashMap<>()
+        );
+        long currentTimeMillis = System.currentTimeMillis();
+        while (activeTokensByEvent.size() < MAX_ACTIVE_PER_EVENT) {
+            QueueEntry nextWaitingEntry = waitingQueueByEvent.poll();
+            if (nextWaitingEntry == null) {
                 break;
             }
-            active.put(head.token(), new QueueToken(head.userId(), now + ACTIVE_WINDOW_MS));
+            activeTokensByEvent.put(nextWaitingEntry.token(), new QueueToken(nextWaitingEntry.userId(), currentTimeMillis + ACTIVE_WINDOW_MS));
         }
     }
 
