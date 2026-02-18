@@ -31,7 +31,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/api/v1/auth/login",
                         "/api/v1/users/signup",
-                        "/api/v1/events/**"
+                        "/api/v1/events",
+                        "/api/v1/events/*"
                 );
 
         registry.addInterceptor(queueValidationInterceptor)
