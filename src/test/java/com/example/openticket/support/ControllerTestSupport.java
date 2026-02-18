@@ -1,5 +1,6 @@
 package com.example.openticket.support;
 
+import com.example.openticket.api.controller.auth.AuthController;
 import com.example.openticket.api.controller.booking.BookingController;
 import com.example.openticket.api.controller.event.EventController;
 import com.example.openticket.api.controller.queue.QueueController;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
 @WebMvcTest(controllers = {
+        AuthController.class,
         BookingController.class,
         EventController.class,
         QueueController.class,
