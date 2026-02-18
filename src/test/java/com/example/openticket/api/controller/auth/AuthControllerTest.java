@@ -7,8 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.openticket.api.controller.auth.dto.request.LoginRequest;
 import com.example.openticket.api.service.auth.dto.response.LoginResponse;
 import com.example.openticket.support.ControllerTestSupport;
+import org.springframework.http.MediaType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -24,8 +26,10 @@ class AuthControllerTest extends ControllerTestSupport {
         // when & then
         mockMvc.perform(
                         post("/api/v1/auth/login")
-                                .param("email", "user@example.com")
-                                .param("password", "password123")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(
+                                        new LoginRequest("user@example.com", "password123")
+                                ))
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
