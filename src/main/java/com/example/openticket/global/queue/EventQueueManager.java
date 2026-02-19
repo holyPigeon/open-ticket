@@ -30,11 +30,6 @@ public class EventQueueManager {
             }
         }
 
-        activeTokensByEvent.entrySet()
-                .stream()
-                .filter(activeEntry -> activeEntry.getValue().userId().equals(userId))
-                .forEach(activeEntry -> new QueueEntry(userId, activeEntry.getKey(), 0, activeEntry.getValue().expiresAt() - ACTIVE_WINDOW_MS));
-
         // Check if user is already waiting
         ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues
                 .computeIfAbsent(eventId, k -> new ConcurrentLinkedQueue<>());
