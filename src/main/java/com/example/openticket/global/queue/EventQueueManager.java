@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class EventQueueManager {
 
     private static final int MAX_ACTIVE_PER_EVENT = 100;
-    private static final long ACTIVE_WINDOW_MS = 5 * 60 * 1000L;
+    private static final long ACTIVE_WINDOW_MS = 10 * 60 * 1000L;
 
     private final ConcurrentHashMap<Long, ConcurrentLinkedQueue<QueueEntry>> waitingQueues = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, ConcurrentHashMap<String, QueueToken>> activeTokens = new ConcurrentHashMap<>();
