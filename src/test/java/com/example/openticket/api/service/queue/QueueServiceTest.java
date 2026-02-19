@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.openticket.api.service.queue.dto.response.QueueStatusResponse;
-import com.example.openticket.global.queue.EventQueueManager.QueuePhase;
+import com.example.openticket.global.queue.QueuePhase;
 import com.example.openticket.support.IntegrationTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

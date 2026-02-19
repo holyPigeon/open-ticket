@@ -30,6 +30,11 @@ public class EventQueueManager {
             }
         }
 
+        activeTokensByEvent.entrySet()
+                .stream()
+                .filter(activeEntry -> activeEntry.getValue().userId().equals(userId))
+                .forEach(activeEntry -> new QueueEntry(userId, activeEntry.getKey(), 0, activeEntry.getValue().expiresAt() - ACTIVE_WINDOW_MS));
+
         // Check if user is already waiting
         ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues
                 .computeIfAbsent(eventId, k -> new ConcurrentLinkedQueue<>());
@@ -141,18 +146,4 @@ public class EventQueueManager {
         }
     }
 
-    public record QueueStatus(String token, QueuePhase phase, int position, long remainingSeconds) {
-
-        static QueueStatus waiting(String token, int position) {
-            return new QueueStatus(token, QueuePhase.WAITING, position, 0);
-        }
-
-        static QueueStatus allowed(String token, long remainingSeconds) {
-            return new QueueStatus(token, QueuePhase.ALLOWED, 0, remainingSeconds);
-        }
-    }
-
-    public enum QueuePhase {
-        WAITING, ALLOWED
-    }
 }

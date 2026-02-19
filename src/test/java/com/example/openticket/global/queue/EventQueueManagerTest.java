@@ -3,8 +3,8 @@ package com.example.openticket.global.queue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.example.openticket.global.queue.EventQueueManager.QueuePhase;
-import com.example.openticket.global.queue.EventQueueManager.QueueStatus;
+import com.example.openticket.global.queue.QueuePhase;
+import com.example.openticket.global.queue.QueueStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

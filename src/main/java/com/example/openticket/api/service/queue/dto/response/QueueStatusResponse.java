@@ -1,7 +1,7 @@
 package com.example.openticket.api.service.queue.dto.response;
 
-import com.example.openticket.global.queue.EventQueueManager.QueuePhase;
-import com.example.openticket.global.queue.EventQueueManager.QueueStatus;
+import com.example.openticket.global.queue.QueuePhase;
+import com.example.openticket.global.queue.QueueStatus;
 
 public record QueueStatusResponse(
         String token,

@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.openticket.api.service.queue.dto.response.QueueStatusResponse;
 import com.example.openticket.domain.user.User;
-import com.example.openticket.global.queue.EventQueueManager.QueuePhase;
+import com.example.openticket.global.queue.QueuePhase;
 import com.example.openticket.support.ControllerTestSupport;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
