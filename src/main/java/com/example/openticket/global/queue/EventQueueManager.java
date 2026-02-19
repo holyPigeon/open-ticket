@@ -20,17 +20,48 @@ public class EventQueueManager {
     public QueueEntry enter(Long eventId, Long userId) {
         evictExpiredForEvent(eventId);
 
+        QueueEntry activeEntry = findActiveEntry(eventId, userId);
+        if (activeEntry != null) {
+            return activeEntry;
+        }
+
+        QueueEntry waitingEntry = findWaitingEntry(eventId, userId);
+        if (waitingEntry != null) {
+            return waitingEntry;
+        }
+
+        return createNewEntry(eventId, userId);
+    }
+
+    public QueueStatus check(Long eventId, String token) {
+        evictExpiredForEvent(eventId);
+        promoteWaiting(eventId);
+
+        QueueStatus activeStatus = findActiveStatus(eventId, token);
+        if (activeStatus != null) {
+            return activeStatus;
+        }
+
+        QueueStatus waitingStatus = findWaitingStatus(eventId, token);
+        if (waitingStatus != null) {
+            return waitingStatus;
+        }
+
+        throw new IllegalArgumentException("유효하지 않은 대기열 토큰입니다.");
+    }
+
+    private QueueEntry findActiveEntry(Long eventId, Long userId) {
         ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens
                 .computeIfAbsent(eventId, k -> new ConcurrentHashMap<>());
-
-        // Check if user already has an active token
         for (var activeEntry : activeTokensByEvent.entrySet()) {
             if (activeEntry.getValue().userId().equals(userId)) {
                 return new QueueEntry(userId, activeEntry.getKey(), 0, activeEntry.getValue().expiresAt() - ACTIVE_WINDOW_MS);
             }
         }
+        return null;
+    }
 
-        // Check if user is already waiting
+    private QueueEntry findWaitingEntry(Long eventId, Long userId) {
         ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues
                 .computeIfAbsent(eventId, k -> new ConcurrentLinkedQueue<>());
         for (QueueEntry waitingEntry : waitingQueueByEvent) {
@@ -38,27 +69,30 @@ public class EventQueueManager {
                 return waitingEntry;
             }
         }
+        return null;
+    }
 
-        // Create new entry
+    private QueueEntry createNewEntry(Long eventId, Long userId) {
         long queueSequence = sequenceCounters.computeIfAbsent(eventId, k -> new AtomicLong(0))
                 .incrementAndGet();
         String generatedToken = UUID.randomUUID().toString();
         long currentTimeMillis = System.currentTimeMillis();
         QueueEntry newWaitingEntry = new QueueEntry(userId, generatedToken, queueSequence, currentTimeMillis);
 
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens
+                .computeIfAbsent(eventId, k -> new ConcurrentHashMap<>());
         if (activeTokensByEvent.size() < MAX_ACTIVE_PER_EVENT) {
             activeTokensByEvent.put(generatedToken, new QueueToken(userId, currentTimeMillis + ACTIVE_WINDOW_MS));
         } else {
+            ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues
+                    .computeIfAbsent(eventId, k -> new ConcurrentLinkedQueue<>());
             waitingQueueByEvent.add(newWaitingEntry);
         }
 
         return newWaitingEntry;
     }
 
-    public QueueStatus check(Long eventId, String token) {
-        evictExpiredForEvent(eventId);
-        promoteWaiting(eventId);
-
+    private QueueStatus findActiveStatus(Long eventId, String token) {
         ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.get(eventId);
         if (activeTokensByEvent != null) {
             QueueToken matchingActiveToken = activeTokensByEvent.get(token);
@@ -67,7 +101,10 @@ public class EventQueueManager {
                 return QueueStatus.allowed(token, remainingSeconds);
             }
         }
+        return null;
+    }
 
+    private QueueStatus findWaitingStatus(Long eventId, String token) {
         ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues.get(eventId);
         if (waitingQueueByEvent != null) {
             int position = 1;
@@ -78,8 +115,7 @@ public class EventQueueManager {
                 position++;
             }
         }
-
-        throw new IllegalArgumentException("유효하지 않은 대기열 토큰입니다.");
+        return null;
     }
 
     public boolean validate(Long eventId, String token) {

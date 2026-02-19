@@ -28,17 +28,8 @@ public class QueueValidationInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String token = request.getHeader(QUEUE_TOKEN_HEADER);
-        if (!StringUtils.hasText(token)) {
-            throw new IllegalStateException("대기열 토큰이 필요합니다.");
-        }
-
-        String eventIdStr = request.getHeader(EVENT_ID_HEADER);
-        if (!StringUtils.hasText(eventIdStr)) {
-            throw new IllegalStateException("이벤트 ID가 필요합니다.");
-        }
-
-        Long eventId = Long.parseLong(eventIdStr);
+        String token = extractRequiredHeader(request, QUEUE_TOKEN_HEADER, "대기열 토큰이 필요합니다.");
+        Long eventId = Long.parseLong(extractRequiredHeader(request, EVENT_ID_HEADER, "이벤트 ID가 필요합니다."));
         boolean valid = annotation.consume()
                 ? eventQueueManager.consumeActiveToken(eventId, token)
                 : eventQueueManager.validate(eventId, token);
@@ -47,5 +38,13 @@ public class QueueValidationInterceptor implements HandlerInterceptor {
         }
 
         return true;
+    }
+
+    private String extractRequiredHeader(HttpServletRequest request, String headerName, String errorMessage) {
+        String value = request.getHeader(headerName);
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalStateException(errorMessage);
+        }
+        return value;
     }
 }
