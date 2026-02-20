@@ -149,4 +149,37 @@ class EventQueueManagerTest {
         assertThat(manager.check(eventId, waiting2.token()).position()).isEqualTo(2);
         assertThat(manager.check(eventId, waiting3.token()).position()).isEqualTo(3);
     }
+
+    @DisplayName("대기 사용자가 없을 때 활성 토큰을 소비해도 슬롯 카운트 누수가 없다.")
+    @Test
+    void consumeActiveToken_withoutWaiting_shouldNotLeakActiveSlot() {
+        // given
+        Long eventId = 1L;
+        QueueEntry entry = manager.enter(eventId, 1L);
+        assertThat(manager.activeCount(eventId)).isEqualTo(1);
+
+        // when
+        boolean consumed = manager.consumeActiveToken(eventId, entry.token());
+
+        // then
+        assertThat(consumed).isTrue();
+        assertThat(manager.activeCount(eventId)).isEqualTo(0);
+        QueueEntry next = manager.enter(eventId, 2L);
+        assertThat(manager.check(eventId, next.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
+    }
+
+    @DisplayName("존재하지 않는 토큰 소비를 반복해도 슬롯 카운트는 음수가 되지 않는다.")
+    @Test
+    void consumeInvalidToken_repeated_shouldNotMakeActiveCountNegative() {
+        // given
+        Long eventId = 1L;
+
+        // when
+        for (int i = 0; i < 1000; i++) {
+            manager.consumeActiveToken(eventId, "invalid-token-" + i);
+        }
+
+        // then
+        assertThat(manager.activeCount(eventId)).isGreaterThanOrEqualTo(0);
+    }
 }

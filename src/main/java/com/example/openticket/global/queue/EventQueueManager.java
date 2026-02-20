@@ -3,6 +3,7 @@ package com.example.openticket.global.queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ public class EventQueueManager {
     private final ConcurrentHashMap<Long, ConcurrentLinkedQueue<QueueEntry>> waitingQueues = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, ConcurrentHashMap<String, QueueToken>> activeTokens = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, AtomicLong> sequenceCounters = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Long, AtomicInteger> activeCounts = new ConcurrentHashMap<>();
 
     public QueueEntry enter(Long eventId, Long userId) {
         evictExpiredForEvent(eventId);
@@ -81,13 +83,18 @@ public class EventQueueManager {
 
         ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens
                 .computeIfAbsent(eventId, k -> new ConcurrentHashMap<>());
-        if (activeTokensByEvent.size() < MAX_ACTIVE_PER_EVENT) {
-            activeTokensByEvent.put(generatedToken, new QueueToken(userId, currentTimeMillis + ACTIVE_WINDOW_MS));
-        } else {
-            ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues
-                    .computeIfAbsent(eventId, k -> new ConcurrentLinkedQueue<>());
-            waitingQueueByEvent.add(newWaitingEntry);
+        if (tryAcquireActiveSlot(eventId)) {
+            QueueToken newActiveToken = new QueueToken(userId, currentTimeMillis + ACTIVE_WINDOW_MS);
+            QueueToken existing = activeTokensByEvent.putIfAbsent(generatedToken, newActiveToken);
+            if (existing == null) {
+                return newWaitingEntry;
+            }
+            releaseActiveSlot(eventId);
         }
+
+        ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues
+                .computeIfAbsent(eventId, k -> new ConcurrentLinkedQueue<>());
+        waitingQueueByEvent.add(newWaitingEntry);
 
         return newWaitingEntry;
     }
@@ -134,18 +141,18 @@ public class EventQueueManager {
             return false;
         }
         QueueToken consumedToken = activeTokensByEvent.remove(token);
-        if (consumedToken == null || consumedToken.expiresAt() < System.currentTimeMillis()) {
+        if (consumedToken == null) {
             return false;
         }
+        releaseActiveSlot(eventId);
         promoteWaiting(eventId);
-        return true;
+        return consumedToken.expiresAt() >= System.currentTimeMillis();
     }
 
     @Scheduled(fixedDelay = 30_000)
     public void evictExpired() {
         activeTokens.forEach((eventId, tokens) -> {
-            long now = System.currentTimeMillis();
-            tokens.entrySet().removeIf(e -> e.getValue().expiresAt() < now);
+            evictExpiredForEvent(eventId);
             promoteWaiting(eventId);
         });
     }
@@ -156,7 +163,14 @@ public class EventQueueManager {
             return;
         }
         long currentTimeMillis = System.currentTimeMillis();
-        activeTokensByEvent.entrySet().removeIf(activeEntry -> activeEntry.getValue().expiresAt() < currentTimeMillis);
+        int removedCount = 0;
+        for (var activeEntry : activeTokensByEvent.entrySet()) {
+            if (activeEntry.getValue().expiresAt() < currentTimeMillis
+                    && activeTokensByEvent.remove(activeEntry.getKey(), activeEntry.getValue())) {
+                removedCount++;
+            }
+        }
+        releaseActiveSlots(eventId, removedCount);
     }
 
     private void promoteWaiting(Long eventId) {
@@ -167,14 +181,55 @@ public class EventQueueManager {
         ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.computeIfAbsent(
                 eventId, k -> new ConcurrentHashMap<>()
         );
-        long currentTimeMillis = System.currentTimeMillis();
-        while (activeTokensByEvent.size() < MAX_ACTIVE_PER_EVENT) {
+        while (tryAcquireActiveSlot(eventId)) {
             QueueEntry nextWaitingEntry = waitingQueueByEvent.poll();
             if (nextWaitingEntry == null) {
+                releaseActiveSlot(eventId);
                 break;
             }
-            activeTokensByEvent.put(nextWaitingEntry.token(), new QueueToken(nextWaitingEntry.userId(), currentTimeMillis + ACTIVE_WINDOW_MS));
+            long currentTimeMillis = System.currentTimeMillis();
+            QueueToken promotedToken = new QueueToken(nextWaitingEntry.userId(), currentTimeMillis + ACTIVE_WINDOW_MS);
+            QueueToken existing = activeTokensByEvent.putIfAbsent(nextWaitingEntry.token(), promotedToken);
+            if (existing != null) {
+                releaseActiveSlot(eventId);
+            }
         }
+    }
+
+    private boolean tryAcquireActiveSlot(Long eventId) {
+        AtomicInteger activeCount = activeCounts.computeIfAbsent(eventId, k -> new AtomicInteger(0));
+        while (true) {
+            int currentCount = activeCount.get();
+            if (currentCount >= MAX_ACTIVE_PER_EVENT) {
+                return false;
+            }
+            if (activeCount.compareAndSet(currentCount, currentCount + 1)) {
+                return true;
+            }
+        }
+    }
+
+    private void releaseActiveSlot(Long eventId) {
+        AtomicInteger activeCount = activeCounts.computeIfAbsent(eventId, k -> new AtomicInteger(0));
+        activeCount.updateAndGet(currentCount -> Math.max(0, currentCount - 1));
+    }
+
+    private void releaseActiveSlots(Long eventId, int removedCount) {
+        for (int i = 0; i < removedCount; i++) {
+            releaseActiveSlot(eventId);
+        }
+    }
+
+    void reconcileActiveCount(Long eventId) {
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.get(eventId);
+        int actualCount = activeTokensByEvent == null ? 0 : activeTokensByEvent.size();
+        AtomicInteger activeCount = activeCounts.computeIfAbsent(eventId, k -> new AtomicInteger(0));
+        activeCount.set(Math.max(0, actualCount));
+    }
+
+    int activeCount(Long eventId) {
+        AtomicInteger activeCount = activeCounts.get(eventId);
+        return activeCount == null ? 0 : activeCount.get();
     }
 
 }
