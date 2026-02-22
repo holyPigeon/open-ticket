@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.openticket.api.service.queue.dto.response.QueueLeaveResponse;
 import com.example.openticket.api.service.queue.dto.response.QueueStatusResponse;
 import com.example.openticket.domain.user.User;
 import com.example.openticket.global.queue.QueuePhase;
@@ -67,5 +68,32 @@ class QueueControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.data.token").value("test-token"))
                 .andExpect(jsonPath("$.data.phase").value("WAITING"))
                 .andExpect(jsonPath("$.data.position").value(5));
+    }
+
+    @DisplayName("대기열 이탈 요청 시 제거 여부를 반환한다.")
+    @Test
+    void leaveQueue() throws Exception {
+        // given
+        given(jwtProvider.validateToken(anyString())).willReturn(true);
+        given(jwtProvider.getUserId(anyString())).willReturn(1L);
+
+        User mockUser = User.builder().name("user").email("email").password("pw").build();
+        ReflectionTestUtils.setField(mockUser, "id", 1L);
+        given(userRepository.findById(anyLong())).willReturn(Optional.of(mockUser));
+
+        given(queueService.leaveQueue(anyLong(), anyString())).willReturn(new QueueLeaveResponse(true));
+
+        // when & then
+        mockMvc.perform(post("/api/v1/queue/events/1/leave")
+                        .header("Authorization", "Bearer test-jwt")
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "queueToken": "test-token"
+                                }
+                                """))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.removed").value(true));
     }
 }

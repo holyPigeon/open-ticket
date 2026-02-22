@@ -1,6 +1,7 @@
 package com.example.openticket.api.service.queue;
 
 import com.example.openticket.api.service.queue.dto.response.QueueStatusResponse;
+import com.example.openticket.api.service.queue.dto.response.QueueLeaveResponse;
 import com.example.openticket.global.queue.EventQueueManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,5 +19,9 @@ public class QueueService {
 
     public QueueStatusResponse checkStatus(Long eventId, String token) {
         return QueueStatusResponse.from(queueManager.check(eventId, token));
+    }
+
+    public QueueLeaveResponse leaveQueue(Long eventId, String token) {
+        return new QueueLeaveResponse(queueManager.leave(eventId, token));
     }
 }

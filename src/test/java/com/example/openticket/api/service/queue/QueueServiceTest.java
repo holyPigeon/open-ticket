@@ -62,4 +62,19 @@ class QueueServiceTest extends IntegrationTestSupport {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("유효하지 않은 대기열 토큰입니다.");
     }
+
+    @DisplayName("대기열 이탈 후 재진입하면 새로운 토큰을 발급받는다.")
+    @Test
+    void leaveQueueThenEnterAgain() {
+        // given
+        QueueStatusResponse first = queueService.enterQueue(5L, 500L);
+
+        // when
+        boolean removed = queueService.leaveQueue(5L, first.token()).removed();
+        QueueStatusResponse second = queueService.enterQueue(5L, 500L);
+
+        // then
+        assertThat(removed).isTrue();
+        assertThat(second.token()).isNotEqualTo(first.token());
+    }
 }

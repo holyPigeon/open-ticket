@@ -149,6 +149,36 @@ public class EventQueueManager {
         return consumedToken.expiresAt() >= System.currentTimeMillis();
     }
 
+    public boolean leave(Long eventId, String token) {
+        ConcurrentHashMap<String, QueueToken> activeTokensByEvent = activeTokens.get(eventId);
+        if (activeTokensByEvent != null) {
+            QueueToken removedActiveToken = activeTokensByEvent.remove(token);
+            if (removedActiveToken != null) {
+                releaseActiveSlot(eventId);
+                promoteWaiting(eventId);
+                return true;
+            }
+        }
+
+        ConcurrentLinkedQueue<QueueEntry> waitingQueueByEvent = waitingQueues.get(eventId);
+        if (waitingQueueByEvent == null) {
+            return false;
+        }
+
+        QueueEntry matchingWaitingEntry = null;
+        for (QueueEntry waitingEntry : waitingQueueByEvent) {
+            if (waitingEntry.token().equals(token)) {
+                matchingWaitingEntry = waitingEntry;
+                break;
+            }
+        }
+        if (matchingWaitingEntry == null) {
+            return false;
+        }
+
+        return waitingQueueByEvent.remove(matchingWaitingEntry);
+    }
+
     @Scheduled(fixedDelay = 30_000)
     public void evictExpired() {
         activeTokens.forEach((eventId, tokens) -> {

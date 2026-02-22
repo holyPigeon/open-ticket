@@ -182,4 +182,53 @@ class EventQueueManagerTest {
         // then
         assertThat(manager.activeCount(eventId)).isGreaterThanOrEqualTo(0);
     }
+
+    @DisplayName("활성 토큰으로 이탈하면 슬롯이 반납되고 대기 사용자가 승격된다.")
+    @Test
+    void leave_activeToken_promotesNextWaiting() {
+        // given
+        Long eventId = 10L;
+        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        for (long i = 2; i <= 100; i++) {
+            manager.enter(eventId, i);
+        }
+        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+
+        // when
+        boolean removed = manager.leave(eventId, activeEntry.token());
+
+        // then
+        assertThat(removed).isTrue();
+        assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
+    }
+
+    @DisplayName("대기 토큰으로 이탈하면 큐에서 제거된다.")
+    @Test
+    void leave_waitingToken_removesFromQueue() {
+        // given
+        Long eventId = 11L;
+        for (long i = 1; i <= 100; i++) {
+            manager.enter(eventId, i);
+        }
+        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+
+        // when
+        boolean removed = manager.leave(eventId, waitingEntry.token());
+
+        // then
+        assertThat(removed).isTrue();
+        assertThatThrownBy(() -> manager.check(eventId, waitingEntry.token()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("유효하지 않은 대기열 토큰입니다.");
+    }
+
+    @DisplayName("존재하지 않는 토큰으로 이탈하면 false를 반환한다.")
+    @Test
+    void leave_invalidToken_returnsFalse() {
+        // when
+        boolean removed = manager.leave(12L, "invalid-token");
+
+        // then
+        assertThat(removed).isFalse();
+    }
 }
