@@ -1,6 +1,6 @@
 package com.example.openticket.global.queue;
 
-public record QueueToken(
+public record ActiveToken(
         Long userId,
         long expiresAt
 ) {

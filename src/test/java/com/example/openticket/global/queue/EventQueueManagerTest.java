@@ -3,8 +3,8 @@ package com.example.openticket.global.queue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.example.openticket.global.queue.QueuePhase;
-import com.example.openticket.global.queue.QueueStatus;
+import java.lang.reflect.Field;
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -183,6 +183,29 @@ class EventQueueManagerTest {
         assertThat(manager.activeCount(eventId)).isGreaterThanOrEqualTo(0);
     }
 
+    @DisplayName("만료된 활성 토큰을 consume하면 false를 반환하고 상태를 변경하지 않는다.")
+    @Test
+    void consumeExpiredToken_shouldReturnFalseWithoutMutatingState() throws Exception {
+        // given
+        Long eventId = 2L;
+        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        for (long userId = 2L; userId <= 100L; userId++) {
+            manager.enter(eventId, userId);
+        }
+        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        expireActiveToken(eventId, activeEntry.token(), 1L);
+        assertThat(manager.activeCount(eventId)).isEqualTo(100);
+        assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);
+
+        // when
+        boolean consumed = manager.consumeActiveToken(eventId, activeEntry.token());
+
+        // then
+        assertThat(consumed).isFalse();
+        assertThat(manager.activeCount(eventId)).isEqualTo(100);
+        assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);
+    }
+
     @DisplayName("활성 토큰으로 이탈하면 슬롯이 반납되고 대기 사용자가 승격된다.")
     @Test
     void leave_activeToken_promotesNextWaiting() {
@@ -230,5 +253,77 @@ class EventQueueManagerTest {
 
         // then
         assertThat(removed).isFalse();
+    }
+
+    @DisplayName("check는 만료/승격을 트리거하지 않는 순수 조회다.")
+    @Test
+    void check_shouldNotMutateState() throws Exception {
+        // given
+        Long eventId = 20L;
+        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        for (long userId = 2L; userId <= 100L; userId++) {
+            manager.enter(eventId, userId);
+        }
+        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        expireActiveToken(eventId, activeEntry.token(), 1L);
+        assertThat(manager.activeCount(eventId)).isEqualTo(100);
+
+        // when
+        QueueStatus first = manager.check(eventId, waitingEntry.token());
+        QueueStatus second = manager.check(eventId, waitingEntry.token());
+
+        // then
+        assertThat(first.phase()).isEqualTo(QueuePhase.WAITING);
+        assertThat(first.position()).isEqualTo(1);
+        assertThat(second.phase()).isEqualTo(QueuePhase.WAITING);
+        assertThat(second.position()).isEqualTo(1);
+        assertThat(manager.activeCount(eventId)).isEqualTo(100);
+    }
+
+    @DisplayName("만료된 활성 토큰은 check에서 유효하지 않은 토큰으로 처리된다.")
+    @Test
+    void check_expiredActiveToken_throwsException() throws Exception {
+        // given
+        Long eventId = 21L;
+        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        expireActiveToken(eventId, activeEntry.token(), 1L);
+
+        // when & then
+        assertThatThrownBy(() -> manager.check(eventId, activeEntry.token()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("유효하지 않은 대기열 토큰입니다.");
+        assertThat(manager.activeCount(eventId)).isEqualTo(1);
+    }
+
+    @DisplayName("승격은 check가 아니라 스케줄러 경로에서 반영된다.")
+    @Test
+    void evictExpired_shouldPromoteWaiting() throws Exception {
+        // given
+        Long eventId = 22L;
+        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        for (long userId = 2L; userId <= 100L; userId++) {
+            manager.enter(eventId, userId);
+        }
+        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        expireActiveToken(eventId, activeEntry.token(), 1L);
+
+        assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);
+
+        // when
+        manager.evictExpiredTokens();
+
+        // then
+        assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void expireActiveToken(Long eventId, String token, Long userId) throws Exception {
+        Field activeTokensField = EventQueueManager.class.getDeclaredField("activeTokens");
+        activeTokensField.setAccessible(true);
+
+        ConcurrentHashMap<Long, ConcurrentHashMap<String, ActiveToken>> activeTokens =
+                (ConcurrentHashMap<Long, ConcurrentHashMap<String, ActiveToken>>) activeTokensField.get(manager);
+        activeTokens.computeIfAbsent(eventId, key -> new ConcurrentHashMap<>())
+                .put(token, new ActiveToken(userId, System.currentTimeMillis() - 1_000));
     }
 }
