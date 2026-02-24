@@ -2,6 +2,7 @@ package com.example.openticket.global.queue;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -53,7 +54,7 @@ public class QueueValidationInterceptor implements HandlerInterceptor {
             return;
         }
         Long pathEventId = Long.parseLong(pathVariables.get("eventId"));
-        if (!pathEventId.equals(headerEventId)) {
+        if (!Objects.equals(pathEventId, headerEventId)) {
             throw new IllegalStateException("대기열 토큰의 이벤트 ID가 요청 경로의 이벤트 ID와 일치하지 않습니다.");
         }
     }
