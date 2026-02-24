@@ -75,4 +75,18 @@ class SeatControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.data[0].seatNumber").value("A1"))
                 .andExpect(jsonPath("$.data[1].seatNumber").value("A2"));
     }
+
+    @DisplayName("X-Event-Id 헤더와 PathVariable eventId가 불일치하면 400을 반환한다.")
+    @Test
+    void getSeats_eventIdMismatch_returnsBadRequest() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/events/{eventId}/seats", 2L)
+                                .header("Authorization", ACCESS_TOKEN)
+                                .header("X-Queue-Token", "test-queue-token")
+                                .header("X-Event-Id", "1")
+                )
+                .andDo(print())
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("대기열 토큰의 이벤트 ID가 요청 경로의 이벤트 ID와 일치하지 않습니다."));
+    }
 }

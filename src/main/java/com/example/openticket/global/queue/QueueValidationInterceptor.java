@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
+
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -30,6 +33,7 @@ public class QueueValidationInterceptor implements HandlerInterceptor {
 
         String token = extractRequiredHeader(request, QUEUE_TOKEN_HEADER, "대기열 토큰이 필요합니다.");
         Long eventId = Long.parseLong(extractRequiredHeader(request, EVENT_ID_HEADER, "이벤트 ID가 필요합니다."));
+        validateEventIdConsistency(request, eventId);
         boolean valid = annotation.consume()
                 ? eventQueueManager.consumeActiveToken(eventId, token)
                 : eventQueueManager.validate(eventId, token);
@@ -38,6 +42,20 @@ public class QueueValidationInterceptor implements HandlerInterceptor {
         }
 
         return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void validateEventIdConsistency(HttpServletRequest request, Long headerEventId) {
+        Map<String, String> pathVariables = (Map<String, String>) request.getAttribute(
+                HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE
+        );
+        if (pathVariables == null || !pathVariables.containsKey("eventId")) {
+            return;
+        }
+        Long pathEventId = Long.parseLong(pathVariables.get("eventId"));
+        if (!pathEventId.equals(headerEventId)) {
+            throw new IllegalStateException("대기열 토큰의 이벤트 ID가 요청 경로의 이벤트 ID와 일치하지 않습니다.");
+        }
     }
 
     private String extractRequiredHeader(HttpServletRequest request, String headerName, String errorMessage) {
