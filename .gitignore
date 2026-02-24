@@ -37,3 +37,5 @@ out/
 .vscode/
 /src/main/generated/
 /load-report/
+/.claude/
+/CLAUDE.md
