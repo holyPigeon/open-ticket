@@ -114,6 +114,33 @@ class BookingServiceTest extends IntegrationTestSupport {
                 .hasMessage("이미 예약된 좌석이 포함되어 있습니다.");
     }
 
+    @DisplayName("사용자의 예약 목록을 조회한다.")
+    @Test
+    void getUserBookings() {
+        // given
+        User user = saveSampleUser();
+        Event event = saveSampleEvent();
+        Seat seat = saveSeat(event, "A1");
+        saveBooking(user, LocalDateTime.now(), List.of(seat));
+
+        // when
+        List<BookingResponse> result = bookingService.getUserBookings(user);
+
+        // then
+        assertThat(result).hasSize(1)
+                .extracting("user.name")
+                .contains("user 1");
+    }
+
+    @DisplayName("존재하지 않는 예약 ID를 조회하면 예외가 발생한다.")
+    @Test
+    void getBookingDetailsFail() {
+        // when & then
+        assertThatThrownBy(() -> bookingService.getBookingDetails(9999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Booking not found: 9999");
+    }
+
     @DisplayName("예약을 취소하면 예약 상태가 취소됨으로 변경되고, 좌석은 다시 예매 가능 상태가 된다.")
     @Test
     void cancelBooking() {

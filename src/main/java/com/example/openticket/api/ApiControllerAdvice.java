@@ -29,4 +29,14 @@ public class ApiControllerAdvice {
                 null
         );
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(IllegalStateException.class)
+    public ApiResponse<Object> handleIllegalStateException(IllegalStateException e) {
+        return ApiResponse.of(
+                HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                null
+        );
+    }
 }
