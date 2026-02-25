@@ -2,6 +2,10 @@ spring:
   profiles:
     default: local
 
+  autoconfigure:
+    exclude:
+      - org.redisson.spring.starter.RedissonAutoConfigurationV2
+
   data:
     redis:
       host: localhost

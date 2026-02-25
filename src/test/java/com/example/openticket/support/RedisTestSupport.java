@@ -7,22 +7,22 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 @ActiveProfiles("test-redis")
 @SpringBootTest
-@Testcontainers
 @EnabledIfDockerAvailable
 public abstract class RedisTestSupport {
 
-    @Container
     @ServiceConnection(name = "redis")
-    static GenericContainer<?> redis =
-            new GenericContainer<>(DockerImageName.parse("redis:7.4-alpine"))
-                    .withExposedPorts(6379);
+    static GenericContainer<?> redis;
+
+    static {
+        redis = new GenericContainer<>(DockerImageName.parse("redis:7.4-alpine"))
+                .withExposedPorts(6379);
+        redis.start();
+    }
 
     @Autowired
     protected StringRedisTemplate redisTemplate;
