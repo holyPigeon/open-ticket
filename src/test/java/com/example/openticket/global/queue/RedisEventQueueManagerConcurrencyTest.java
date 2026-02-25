@@ -74,7 +74,10 @@ class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
         assertThat(userTokens).hasSize(totalUsers);
         assertThat(allowedCount).isEqualTo(100);
         assertThat(waitingCount).isEqualTo(50);
-        assertThat(waitingPositions).contains(1, 50);
+        assertThat(waitingPositions)
+                .containsExactlyInAnyOrderElementsOf(
+                        java.util.stream.IntStream.rangeClosed(1, 50).boxed().toList()
+                );
     }
 
     @DisplayName("동시 진입 테스트를 반복해도 ALLOWED는 최대 100명을 유지한다.")

@@ -55,8 +55,7 @@ public class RedisEventQueueManager implements EventQueueManager {
         );
 
         String returnedToken = result.get(1);
-        long sequence = 0;
-        return new QueueEntry(userId, returnedToken, sequence, nowMs);
+        return new QueueEntry(userId, returnedToken, 0, nowMs);
     }
 
     @Override

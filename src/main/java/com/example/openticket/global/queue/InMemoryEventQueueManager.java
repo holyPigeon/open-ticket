@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -91,6 +92,11 @@ public class InMemoryEventQueueManager implements EventQueueManager {
     public void promoteForEvent(Long eventId) {
         evictExpiredTokensForEvent(eventId);
         promoteWaiting(eventId);
+    }
+
+    @Scheduled(fixedDelay = 5000)
+    public void evictExpiredTokens() {
+        activeTokens.keySet().forEach(this::promoteForEvent);
     }
 
     private QueueEntry findActiveEntry(Long eventId, Long userId) {
