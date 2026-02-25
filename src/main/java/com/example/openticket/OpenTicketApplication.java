@@ -1,6 +1,6 @@
 package com.example.openticket;
 
-import com.example.openticket.global.queue.QueueProperties;
+import com.example.openticket.domain.queue.QueueProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

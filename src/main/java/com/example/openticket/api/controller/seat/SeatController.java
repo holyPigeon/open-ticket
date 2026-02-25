@@ -3,7 +3,7 @@ package com.example.openticket.api.controller.seat;
 import com.example.openticket.api.ApiResponse;
 import com.example.openticket.api.service.seat.SeatService;
 import com.example.openticket.api.service.seat.dto.response.SeatResponse;
-import com.example.openticket.global.queue.CheckQueueToken;
+import com.example.openticket.global.annotation.CheckQueueToken;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

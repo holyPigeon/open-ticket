@@ -2,7 +2,7 @@ package com.example.openticket.api.service.queue;
 
 import com.example.openticket.api.service.queue.dto.response.QueueStatusResponse;
 import com.example.openticket.api.service.queue.dto.response.QueueLeaveResponse;
-import com.example.openticket.global.queue.EventQueueManager;
+import com.example.openticket.domain.queue.EventQueueManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

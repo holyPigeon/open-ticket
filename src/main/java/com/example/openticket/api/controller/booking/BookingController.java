@@ -6,7 +6,7 @@ import com.example.openticket.api.service.booking.BookingService;
 import com.example.openticket.api.service.booking.dto.response.BookingResponse;
 import com.example.openticket.domain.user.User;
 import com.example.openticket.global.auth.LoginUser;
-import com.example.openticket.global.queue.CheckQueueToken;
+import com.example.openticket.global.annotation.CheckQueueToken;
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
