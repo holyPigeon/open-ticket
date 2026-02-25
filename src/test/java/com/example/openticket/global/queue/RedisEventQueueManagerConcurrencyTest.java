@@ -2,6 +2,7 @@ package com.example.openticket.global.queue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.openticket.support.RedisTestSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -13,14 +14,18 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.testcontainers.junit.jupiter.EnabledIfDockerAvailable;
 
-class EventQueueManagerLoadTest {
+@EnabledIfDockerAvailable
+class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
+
+    @Autowired
+    private EventQueueManager manager;
 
     @DisplayName("동시에 150명이 진입하면 100명은 ALLOWED, 50명은 WAITING 상태여야 한다.")
     @Test
     void concurrentEnter_150Users_shouldSplitAllowedAndWaiting() throws InterruptedException {
-        // given
-        InMemoryEventQueueManager manager = new InMemoryEventQueueManager();
         Long eventId = 1L;
         int totalUsers = 150;
 
@@ -30,7 +35,6 @@ class EventQueueManagerLoadTest {
         CountDownLatch doneLatch = new CountDownLatch(totalUsers);
         Map<Long, String> userTokens = new ConcurrentHashMap<>();
 
-        // when
         for (long userId = 1L; userId <= totalUsers; userId++) {
             long uid = userId;
             executorService.submit(() -> {
@@ -49,7 +53,7 @@ class EventQueueManagerLoadTest {
 
         readyLatch.await(5, TimeUnit.SECONDS);
         startLatch.countDown();
-        doneLatch.await(10, TimeUnit.SECONDS);
+        doneLatch.await(30, TimeUnit.SECONDS);
         executorService.shutdown();
         executorService.awaitTermination(5, TimeUnit.SECONDS);
 
@@ -67,11 +71,13 @@ class EventQueueManagerLoadTest {
             }
         }
 
-        // then
         assertThat(userTokens).hasSize(totalUsers);
         assertThat(allowedCount).isEqualTo(100);
         assertThat(waitingCount).isEqualTo(50);
-        assertThat(waitingPositions).contains(1, 50);
+        assertThat(waitingPositions)
+                .containsExactlyInAnyOrderElementsOf(
+                        java.util.stream.IntStream.rangeClosed(1, 50).boxed().toList()
+                );
     }
 
     @DisplayName("동시 진입 테스트를 반복해도 ALLOWED는 최대 100명을 유지한다.")
@@ -80,37 +86,60 @@ class EventQueueManagerLoadTest {
         concurrentEnter_150Users_shouldSplitAllowedAndWaiting();
     }
 
-    @DisplayName("활성 사용자가 차차 빠져나가면 대기 사용자는 순서대로 승격된다.")
+    @DisplayName("100명의 활성 토큰을 동시에 소비하면 대기 중인 50명이 정확히 승격된다.")
     @Test
-    void waitingUser_shouldBePromoted_whenActiveUsersConsumeTokens() {
-        // given
-        InMemoryEventQueueManager manager = new InMemoryEventQueueManager();
-        Long eventId = 1L;
+    void concurrentConsume_shouldPromoteExactlyWaitingUsers() throws InterruptedException {
+        Long eventId = 2L;
         List<String> activeTokens = new ArrayList<>();
 
         for (long userId = 1L; userId <= 100; userId++) {
             activeTokens.add(manager.enter(eventId, userId).token());
         }
 
-        QueueEntry waiting1 = manager.enter(eventId, 101L);
-        QueueEntry waiting2 = manager.enter(eventId, 102L);
-        QueueEntry waiting3 = manager.enter(eventId, 103L);
+        List<QueueEntry> waitingEntries = new ArrayList<>();
+        for (long userId = 101L; userId <= 150; userId++) {
+            waitingEntries.add(manager.enter(eventId, userId));
+        }
 
-        assertThat(manager.check(eventId, waiting1.token()).position()).isEqualTo(1);
-        assertThat(manager.check(eventId, waiting2.token()).position()).isEqualTo(2);
-        assertThat(manager.check(eventId, waiting3.token()).position()).isEqualTo(3);
+        // Verify all 50 are waiting
+        for (QueueEntry entry : waitingEntries) {
+            assertThat(manager.check(eventId, entry.token()).phase()).isEqualTo(QueuePhase.WAITING);
+        }
 
-        // when
-        boolean firstConsumed = manager.consumeActiveToken(eventId, activeTokens.get(0));
-        boolean secondConsumed = manager.consumeActiveToken(eventId, activeTokens.get(1));
-        boolean thirdConsumed = manager.consumeActiveToken(eventId, activeTokens.get(2));
+        // Consume all 100 active tokens concurrently
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch readyLatch = new CountDownLatch(100);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(100);
 
-        // then
-        assertThat(firstConsumed).isTrue();
-        assertThat(secondConsumed).isTrue();
-        assertThat(thirdConsumed).isTrue();
-        assertThat(manager.check(eventId, waiting1.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
-        assertThat(manager.check(eventId, waiting2.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
-        assertThat(manager.check(eventId, waiting3.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
+        for (String token : activeTokens) {
+            executorService.submit(() -> {
+                readyLatch.countDown();
+                try {
+                    startLatch.await();
+                    manager.consumeActiveToken(eventId, token);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        }
+
+        readyLatch.await(5, TimeUnit.SECONDS);
+        startLatch.countDown();
+        doneLatch.await(30, TimeUnit.SECONDS);
+        executorService.shutdown();
+        executorService.awaitTermination(5, TimeUnit.SECONDS);
+
+        // All 50 waiting users should now be ALLOWED
+        int promotedCount = 0;
+        for (QueueEntry entry : waitingEntries) {
+            QueueStatus status = manager.check(eventId, entry.token());
+            if (status.phase() == QueuePhase.ALLOWED) {
+                promotedCount++;
+            }
+        }
+        assertThat(promotedCount).isEqualTo(50);
     }
 }

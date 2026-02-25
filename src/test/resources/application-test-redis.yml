@@ -1,11 +1,10 @@
 spring:
   config:
     activate:
-      on-profile: test
+      on-profile: test-redis
 
   autoconfigure:
     exclude:
-      - org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration
       - org.redisson.spring.starter.RedissonAutoConfigurationV2
 
   datasource:
@@ -28,7 +27,9 @@ spring:
         default_batch_fetch_size: 100
 
 queue:
-  type: memory
+  type: redis
+  max-active-per-event: 100
+  active-window-seconds: 600
 
 logging:
   level:
