@@ -39,3 +39,9 @@ out/
 /load-report/
 /.claude/
 /CLAUDE.md
+
+### Load test ###
+node_modules/
+package-lock.json
+tokens.csv
+/package.json
