@@ -44,4 +44,4 @@ spring:
 queue:
   type: redis
   max-active-per-event: 100
-  active-window-seconds: 600
+  active-window-seconds: 30    # 로컬 테스트: 30초 후 미응답 슬롯 자동 회수 (운영: 600)
