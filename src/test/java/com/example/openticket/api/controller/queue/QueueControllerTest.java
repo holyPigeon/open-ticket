@@ -32,7 +32,7 @@ class QueueControllerTest extends ControllerTestSupport {
         ReflectionTestUtils.setField(mockUser, "id", 1L);
         given(userRepository.findById(anyLong())).willReturn(Optional.of(mockUser));
 
-        QueueStatusResponse response = new QueueStatusResponse("test-token", QueuePhase.ALLOWED, 0, 300);
+        QueueStatusResponse response = new QueueStatusResponse("test-token", QueuePhase.ALLOWED, 0, 300, 0);
         given(queueService.enterQueue(anyLong(), anyLong())).willReturn(response);
 
         // when & then
@@ -42,7 +42,8 @@ class QueueControllerTest extends ControllerTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.token").value("test-token"))
                 .andExpect(jsonPath("$.data.phase").value("ALLOWED"))
-                .andExpect(jsonPath("$.data.remainingSeconds").value(300));
+                .andExpect(jsonPath("$.data.remainingSeconds").value(300))
+                .andExpect(jsonPath("$.data.pollIntervalSeconds").value(0));
     }
 
     @DisplayName("대기열 상태를 조회하면 현재 위치와 상태를 반환한다.")
@@ -56,7 +57,7 @@ class QueueControllerTest extends ControllerTestSupport {
         ReflectionTestUtils.setField(mockUser, "id", 1L);
         given(userRepository.findById(anyLong())).willReturn(Optional.of(mockUser));
 
-        QueueStatusResponse response = new QueueStatusResponse("test-token", QueuePhase.WAITING, 5, 0);
+        QueueStatusResponse response = new QueueStatusResponse("test-token", QueuePhase.WAITING, 5, 0, 3);
         given(queueService.checkStatus(anyLong(), anyString())).willReturn(response);
 
         // when & then
@@ -67,7 +68,8 @@ class QueueControllerTest extends ControllerTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.token").value("test-token"))
                 .andExpect(jsonPath("$.data.phase").value("WAITING"))
-                .andExpect(jsonPath("$.data.position").value(5));
+                .andExpect(jsonPath("$.data.position").value(5))
+                .andExpect(jsonPath("$.data.pollIntervalSeconds").value(3));
     }
 
     @DisplayName("대기열 이탈 요청 시 제거 여부를 반환한다.")

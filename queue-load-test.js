@@ -270,7 +270,8 @@ export default function () {
 
     // 2. WAITING 상태: 폴링 (지터 추가로 동시 스파이크 방지)
     while (current.phase === 'WAITING') {
-      sleep(POLL_INTERVAL_SECONDS + Math.random() * POLL_JITTER_SECONDS);
+      const interval = current.pollIntervalSeconds ?? POLL_INTERVAL_SECONDS;
+      sleep(interval + Math.random() * POLL_JITTER_SECONDS);
 
       const elapsedSeconds = (Date.now() - waitingStartedAt) / 1000;
       if (elapsedSeconds > MAX_WAIT_SECONDS) {
