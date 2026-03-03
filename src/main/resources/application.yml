@@ -2,6 +2,10 @@ spring:
   profiles:
     default: local
 
+  threads:
+    virtual:
+      enabled: true
+
   autoconfigure:
     exclude:
       - org.redisson.spring.starter.RedissonAutoConfigurationV2
@@ -16,7 +20,6 @@ spring:
     url: jdbc:mysql://localhost:3307/open_ticket
     username: root
     password: '0000'
-
   jpa:
     hibernate:
       ddl-auto: none

@@ -12,7 +12,7 @@
  *
  * 환경 변수 (기본값은 application.yml 로컬 설정과 일치):
  *   JWT_SECRET    = 'secret-key-must-be-very-long-for-security-reasons'
- *   JWT_EXPIRY    = '24h'
+ *   JWT_EXPIRY    = '7d'
  *   DB_HOST       = 'localhost'
  *   DB_PORT       = 3307
  *   DB_USER       = 'root'
@@ -29,7 +29,7 @@ const fs     = require('fs');
 const path   = require('path');
 
 const JWT_SECRET   = process.env.JWT_SECRET  || 'secret-key-must-be-very-long-for-security-reasons';
-const JWT_EXPIRY   = process.env.JWT_EXPIRY  || '24h';
+const JWT_EXPIRY   = process.env.JWT_EXPIRY  || '7d';
 const DB_HOST      = process.env.DB_HOST     || 'localhost';
 const DB_PORT      = Number(process.env.DB_PORT || 3307);
 const DB_USER      = process.env.DB_USER     || 'root';

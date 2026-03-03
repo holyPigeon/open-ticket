@@ -1,6 +1,6 @@
 -- seed-users.sql
--- user4@gmail.com ~ user5000@gmail.com (4997명 추가)
--- 기존 user1~user3은 data.sql에서 생성되므로 제외
+-- user201@gmail.com ~ user5000@gmail.com (4800명 추가)
+-- 기존 user1~user200은 data.sql에서 생성되므로 제외
 --
 -- 실행 방법:
 --   mysql -u root -p0000 open_ticket < seed-users.sql
@@ -24,6 +24,6 @@ FROM (
     SELECT @row := @row + 1 AS n
     FROM information_schema.columns c1,
          information_schema.columns c2,
-         (SELECT @row := 3) r
-    LIMIT 4997
+         (SELECT @row := 200) r
+    LIMIT 4800
 ) t;
