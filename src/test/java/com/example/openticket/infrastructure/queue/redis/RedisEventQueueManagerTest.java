@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.openticket.domain.queue.EventQueueManager;
-import com.example.openticket.domain.queue.QueueEntry;
 import com.example.openticket.domain.queue.QueuePhase;
 import com.example.openticket.domain.queue.QueueStatus;
 import com.example.openticket.support.RedisTestSupport;
@@ -25,7 +24,7 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
         Long eventId = 1L;
         Long userId = 100L;
 
-        QueueEntry entry = manager.enter(eventId, userId);
+        QueueStatus entry = manager.enter(eventId, userId);
         QueueStatus status = manager.check(eventId, entry.token());
 
         assertThat(status.phase()).isEqualTo(QueuePhase.ALLOWED);
@@ -40,7 +39,7 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
             manager.enter(eventId, i);
         }
 
-        QueueEntry entry = manager.enter(eventId, 101L);
+        QueueStatus entry = manager.enter(eventId, 101L);
         QueueStatus status = manager.check(eventId, entry.token());
 
         assertThat(status.phase()).isEqualTo(QueuePhase.WAITING);
@@ -53,8 +52,8 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
         Long eventId = 1L;
         Long userId = 100L;
 
-        QueueEntry first = manager.enter(eventId, userId);
-        QueueEntry second = manager.enter(eventId, userId);
+        QueueStatus first = manager.enter(eventId, userId);
+        QueueStatus second = manager.enter(eventId, userId);
 
         assertThat(first.token()).isEqualTo(second.token());
     }
@@ -63,11 +62,11 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
     @Test
     void consumeActiveToken_promotesNextWaiting() {
         Long eventId = 1L;
-        QueueEntry firstEntry = manager.enter(eventId, 1L);
+        QueueStatus firstEntry = manager.enter(eventId, 1L);
         for (long i = 2; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);
 
@@ -97,7 +96,7 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
     @Test
     void validate_activeToken_returnsTrueAndPreservesToken() {
         Long eventId = 1L;
-        QueueEntry entry = manager.enter(eventId, 1L);
+        QueueStatus entry = manager.enter(eventId, 1L);
 
         boolean result = manager.validate(eventId, entry.token());
 
@@ -120,9 +119,9 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
         for (long i = 1; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waiting1 = manager.enter(eventId, 101L);
-        QueueEntry waiting2 = manager.enter(eventId, 102L);
-        QueueEntry waiting3 = manager.enter(eventId, 103L);
+        QueueStatus waiting1 = manager.enter(eventId, 101L);
+        QueueStatus waiting2 = manager.enter(eventId, 102L);
+        QueueStatus waiting3 = manager.enter(eventId, 103L);
 
         assertThat(manager.check(eventId, waiting1.token()).position()).isEqualTo(1);
         assertThat(manager.check(eventId, waiting2.token()).position()).isEqualTo(2);
@@ -133,11 +132,11 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
     @Test
     void leave_activeToken_promotesNextWaiting() {
         Long eventId = 10L;
-        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        QueueStatus activeEntry = manager.enter(eventId, 1L);
         for (long i = 2; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         boolean removed = manager.leave(eventId, activeEntry.token());
 
@@ -152,7 +151,7 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
         for (long i = 1; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         boolean removed = manager.leave(eventId, waitingEntry.token());
 
@@ -174,12 +173,12 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
     @Test
     void consumeActiveToken_withoutWaiting_newUserIsAllowed() {
         Long eventId = 1L;
-        QueueEntry entry = manager.enter(eventId, 1L);
+        QueueStatus entry = manager.enter(eventId, 1L);
 
         boolean consumed = manager.consumeActiveToken(eventId, entry.token());
 
         assertThat(consumed).isTrue();
-        QueueEntry next = manager.enter(eventId, 2L);
+        QueueStatus next = manager.enter(eventId, 2L);
         assertThat(manager.check(eventId, next.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
     }
 
@@ -187,11 +186,11 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
     @Test
     void promoteForEvent_shouldPromoteWaiting() {
         Long eventId = 22L;
-        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        QueueStatus activeEntry = manager.enter(eventId, 1L);
         for (long userId = 2L; userId <= 100L; userId++) {
             manager.enter(eventId, userId);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);
 
@@ -209,7 +208,7 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
         for (long userId = 1L; userId <= 100L; userId++) {
             manager.enter(eventId, userId);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         QueueStatus first = manager.check(eventId, waitingEntry.token());
         QueueStatus second = manager.check(eventId, waitingEntry.token());
@@ -230,9 +229,9 @@ class RedisEventQueueManagerTest extends RedisTestSupport {
             activeTokens.add(manager.enter(eventId, userId).token());
         }
 
-        QueueEntry waiting1 = manager.enter(eventId, 101L);
-        QueueEntry waiting2 = manager.enter(eventId, 102L);
-        QueueEntry waiting3 = manager.enter(eventId, 103L);
+        QueueStatus waiting1 = manager.enter(eventId, 101L);
+        QueueStatus waiting2 = manager.enter(eventId, 102L);
+        QueueStatus waiting3 = manager.enter(eventId, 103L);
 
         assertThat(manager.check(eventId, waiting1.token()).position()).isEqualTo(1);
         assertThat(manager.check(eventId, waiting2.token()).position()).isEqualTo(2);

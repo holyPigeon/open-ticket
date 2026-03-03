@@ -3,7 +3,6 @@ package com.example.openticket.infrastructure.queue.redis;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.openticket.domain.queue.EventQueueManager;
-import com.example.openticket.domain.queue.QueueEntry;
 import com.example.openticket.domain.queue.QueuePhase;
 import com.example.openticket.domain.queue.QueueStatus;
 import com.example.openticket.support.RedisTestSupport;
@@ -45,7 +44,7 @@ class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
                 readyLatch.countDown();
                 try {
                     startLatch.await();
-                    QueueEntry entry = manager.enter(eventId, uid);
+                    QueueStatus entry = manager.enter(eventId, uid);
                     userTokens.put(uid, entry.token());
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -100,13 +99,13 @@ class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
             activeTokens.add(manager.enter(eventId, userId).token());
         }
 
-        List<QueueEntry> waitingEntries = new ArrayList<>();
+        List<QueueStatus> waitingEntries = new ArrayList<>();
         for (long userId = 101L; userId <= 150; userId++) {
             waitingEntries.add(manager.enter(eventId, userId));
         }
 
         // Verify all 50 are waiting
-        for (QueueEntry entry : waitingEntries) {
+        for (QueueStatus entry : waitingEntries) {
             assertThat(manager.check(eventId, entry.token()).phase()).isEqualTo(QueuePhase.WAITING);
         }
 
@@ -138,7 +137,7 @@ class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
 
         // All 50 waiting users should now be ALLOWED
         int promotedCount = 0;
-        for (QueueEntry entry : waitingEntries) {
+        for (QueueStatus entry : waitingEntries) {
             QueueStatus status = manager.check(eventId, entry.token());
             if (status.phase() == QueuePhase.ALLOWED) {
                 promotedCount++;

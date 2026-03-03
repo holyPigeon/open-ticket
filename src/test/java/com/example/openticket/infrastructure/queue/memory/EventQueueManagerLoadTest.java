@@ -2,7 +2,6 @@ package com.example.openticket.infrastructure.queue.memory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.openticket.domain.queue.QueueEntry;
 import com.example.openticket.domain.queue.QueuePhase;
 import com.example.openticket.domain.queue.QueueStatus;
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ class EventQueueManagerLoadTest {
                 readyLatch.countDown();
                 try {
                     startLatch.await();
-                    QueueEntry entry = manager.enter(eventId, uid);
+                    QueueStatus entry = manager.enter(eventId, uid);
                     userTokens.put(uid, entry.token());
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -95,9 +94,9 @@ class EventQueueManagerLoadTest {
             activeTokens.add(manager.enter(eventId, userId).token());
         }
 
-        QueueEntry waiting1 = manager.enter(eventId, 101L);
-        QueueEntry waiting2 = manager.enter(eventId, 102L);
-        QueueEntry waiting3 = manager.enter(eventId, 103L);
+        QueueStatus waiting1 = manager.enter(eventId, 101L);
+        QueueStatus waiting2 = manager.enter(eventId, 102L);
+        QueueStatus waiting3 = manager.enter(eventId, 103L);
 
         assertThat(manager.check(eventId, waiting1.token()).position()).isEqualTo(1);
         assertThat(manager.check(eventId, waiting2.token()).position()).isEqualTo(2);

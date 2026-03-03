@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.openticket.domain.queue.ActiveToken;
-import com.example.openticket.domain.queue.QueueEntry;
 import com.example.openticket.domain.queue.QueuePhase;
 import com.example.openticket.domain.queue.QueueStatus;
 import java.lang.reflect.Field;
@@ -30,7 +29,7 @@ class EventQueueManagerTest {
         Long userId = 100L;
 
         // when
-        QueueEntry entry = manager.enter(eventId, userId);
+        QueueStatus entry = manager.enter(eventId, userId);
         QueueStatus status = manager.check(eventId, entry.token());
 
         // then
@@ -48,7 +47,7 @@ class EventQueueManagerTest {
         }
 
         // when
-        QueueEntry entry = manager.enter(eventId, 101L);
+        QueueStatus entry = manager.enter(eventId, 101L);
         QueueStatus status = manager.check(eventId, entry.token());
 
         // then
@@ -64,8 +63,8 @@ class EventQueueManagerTest {
         Long userId = 100L;
 
         // when
-        QueueEntry first = manager.enter(eventId, userId);
-        QueueEntry second = manager.enter(eventId, userId);
+        QueueStatus first = manager.enter(eventId, userId);
+        QueueStatus second = manager.enter(eventId, userId);
 
         // then
         assertThat(first.token()).isEqualTo(second.token());
@@ -76,11 +75,11 @@ class EventQueueManagerTest {
     void consumeActiveToken_promotesNextWaiting() {
         // given
         Long eventId = 1L;
-        QueueEntry firstEntry = manager.enter(eventId, 1L);
+        QueueStatus firstEntry = manager.enter(eventId, 1L);
         for (long i = 2; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);
 
@@ -116,7 +115,7 @@ class EventQueueManagerTest {
     void validate_activeToken_returnsTrueAndPreservesToken() {
         // given
         Long eventId = 1L;
-        QueueEntry entry = manager.enter(eventId, 1L);
+        QueueStatus entry = manager.enter(eventId, 1L);
 
         // when
         boolean result = manager.validate(eventId, entry.token());
@@ -144,9 +143,9 @@ class EventQueueManagerTest {
         for (long i = 1; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waiting1 = manager.enter(eventId, 101L);
-        QueueEntry waiting2 = manager.enter(eventId, 102L);
-        QueueEntry waiting3 = manager.enter(eventId, 103L);
+        QueueStatus waiting1 = manager.enter(eventId, 101L);
+        QueueStatus waiting2 = manager.enter(eventId, 102L);
+        QueueStatus waiting3 = manager.enter(eventId, 103L);
 
         // when & then
         assertThat(manager.check(eventId, waiting1.token()).position()).isEqualTo(1);
@@ -159,7 +158,7 @@ class EventQueueManagerTest {
     void consumeActiveToken_withoutWaiting_shouldNotLeakActiveSlot() {
         // given
         Long eventId = 1L;
-        QueueEntry entry = manager.enter(eventId, 1L);
+        QueueStatus entry = manager.enter(eventId, 1L);
         assertThat(manager.activeCount(eventId)).isEqualTo(1);
 
         // when
@@ -168,7 +167,7 @@ class EventQueueManagerTest {
         // then
         assertThat(consumed).isTrue();
         assertThat(manager.activeCount(eventId)).isEqualTo(0);
-        QueueEntry next = manager.enter(eventId, 2L);
+        QueueStatus next = manager.enter(eventId, 2L);
         assertThat(manager.check(eventId, next.token()).phase()).isEqualTo(QueuePhase.ALLOWED);
     }
 
@@ -192,11 +191,11 @@ class EventQueueManagerTest {
     void consumeExpiredToken_shouldReturnFalseWithoutMutatingState() throws Exception {
         // given
         Long eventId = 2L;
-        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        QueueStatus activeEntry = manager.enter(eventId, 1L);
         for (long userId = 2L; userId <= 100L; userId++) {
             manager.enter(eventId, userId);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
         expireActiveToken(eventId, activeEntry.token(), 1L);
         assertThat(manager.activeCount(eventId)).isEqualTo(100);
         assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);
@@ -215,11 +214,11 @@ class EventQueueManagerTest {
     void leave_activeToken_promotesNextWaiting() {
         // given
         Long eventId = 10L;
-        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        QueueStatus activeEntry = manager.enter(eventId, 1L);
         for (long i = 2; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         // when
         boolean removed = manager.leave(eventId, activeEntry.token());
@@ -237,7 +236,7 @@ class EventQueueManagerTest {
         for (long i = 1; i <= 100; i++) {
             manager.enter(eventId, i);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
 
         // when
         boolean removed = manager.leave(eventId, waitingEntry.token());
@@ -264,11 +263,11 @@ class EventQueueManagerTest {
     void check_shouldNotMutateState() throws Exception {
         // given
         Long eventId = 20L;
-        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        QueueStatus activeEntry = manager.enter(eventId, 1L);
         for (long userId = 2L; userId <= 100L; userId++) {
             manager.enter(eventId, userId);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
         expireActiveToken(eventId, activeEntry.token(), 1L);
         assertThat(manager.activeCount(eventId)).isEqualTo(100);
 
@@ -289,7 +288,7 @@ class EventQueueManagerTest {
     void check_expiredActiveToken_throwsException() throws Exception {
         // given
         Long eventId = 21L;
-        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        QueueStatus activeEntry = manager.enter(eventId, 1L);
         expireActiveToken(eventId, activeEntry.token(), 1L);
 
         // when & then
@@ -304,11 +303,11 @@ class EventQueueManagerTest {
     void evictExpired_shouldPromoteWaiting() throws Exception {
         // given
         Long eventId = 22L;
-        QueueEntry activeEntry = manager.enter(eventId, 1L);
+        QueueStatus activeEntry = manager.enter(eventId, 1L);
         for (long userId = 2L; userId <= 100L; userId++) {
             manager.enter(eventId, userId);
         }
-        QueueEntry waitingEntry = manager.enter(eventId, 101L);
+        QueueStatus waitingEntry = manager.enter(eventId, 101L);
         expireActiveToken(eventId, activeEntry.token(), 1L);
 
         assertThat(manager.check(eventId, waitingEntry.token()).phase()).isEqualTo(QueuePhase.WAITING);

@@ -2,7 +2,7 @@ package com.example.openticket.domain.queue;
 
 public interface EventQueueManager {
 
-    QueueEntry enter(Long eventId, Long userId);
+    QueueStatus enter(Long eventId, Long userId);
 
     QueueStatus check(Long eventId, String token);
 

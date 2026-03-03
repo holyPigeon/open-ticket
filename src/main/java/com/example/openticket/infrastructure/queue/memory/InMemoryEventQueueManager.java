@@ -27,25 +27,25 @@ public class InMemoryEventQueueManager implements EventQueueManager {
     private final ConcurrentHashMap<Long, AtomicInteger> activeCounts = new ConcurrentHashMap<>();
 
     @Override
-    public QueueEntry enter(Long eventId, Long userId) {
+    public QueueStatus enter(Long eventId, Long userId) {
         evictExpiredTokensForEvent(eventId);
 
         QueueEntry activeEntry = findActiveEntry(eventId, userId);
         if (activeEntry != null) {
-            return activeEntry;
+            return check(eventId, activeEntry.token());
         }
 
         QueueEntry waitingEntry = findWaitingEntry(eventId, userId);
         if (waitingEntry != null) {
-            return waitingEntry;
+            return check(eventId, waitingEntry.token());
         }
 
         QueueEntry newEntry = issueNewEntry(eventId, userId);
         if (tryActivate(eventId, newEntry)) {
-            return newEntry;
+            return check(eventId, newEntry.token());
         }
         addToWaitingQueue(eventId, newEntry);
-        return newEntry;
+        return check(eventId, newEntry.token());
     }
 
     @Override

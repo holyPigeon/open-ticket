@@ -1,7 +1,6 @@
 package com.example.openticket.infrastructure.queue.redis;
 
 import com.example.openticket.domain.queue.EventQueueManager;
-import com.example.openticket.domain.queue.QueueEntry;
 import com.example.openticket.domain.queue.QueueProperties;
 import com.example.openticket.domain.queue.QueueStatus;
 import java.util.List;
@@ -39,7 +38,7 @@ public class RedisEventQueueManager implements EventQueueManager {
     }
 
     @Override
-    public QueueEntry enter(Long eventId, Long userId) {
+    public QueueStatus enter(Long eventId, Long userId) {
         String token = UUID.randomUUID().toString();
         long nowMs = System.currentTimeMillis();
 
@@ -58,8 +57,15 @@ public class RedisEventQueueManager implements EventQueueManager {
                 eventId.toString()
         );
 
+        String phase = result.get(0);
         String returnedToken = result.get(1);
-        return new QueueEntry(userId, returnedToken, 0, nowMs);
+        int position = Integer.parseInt(result.get(2));
+        long remainingSeconds = Long.parseLong(result.get(3));
+
+        if ("ALLOWED".equals(phase)) {
+            return QueueStatus.allowed(returnedToken, remainingSeconds);
+        }
+        return QueueStatus.waiting(returnedToken, position);
     }
 
     @Override

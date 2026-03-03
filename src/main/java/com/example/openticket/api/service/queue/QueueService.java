@@ -13,8 +13,7 @@ public class QueueService {
     private final EventQueueManager queueManager;
 
     public QueueStatusResponse enterQueue(Long eventId, Long userId) {
-        String token = queueManager.enter(eventId, userId).token();
-        return QueueStatusResponse.from(queueManager.check(eventId, token));
+        return QueueStatusResponse.from(queueManager.enter(eventId, userId));
     }
 
     public QueueStatusResponse checkStatus(Long eventId, String token) {
