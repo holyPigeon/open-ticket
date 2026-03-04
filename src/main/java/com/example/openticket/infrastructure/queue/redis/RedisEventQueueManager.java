@@ -17,6 +17,9 @@ public class RedisEventQueueManager implements EventQueueManager {
 
     private static final String REGISTRY_KEY = "queue:events:registry";
 
+    private static final String PHASE_ALLOWED = "ALLOWED";
+    private static final String PHASE_INVALID = "INVALID";
+
     private final StringRedisTemplate redisTemplate;
     private final QueueProperties properties;
 
@@ -33,7 +36,7 @@ public class RedisEventQueueManager implements EventQueueManager {
         this.enterScript = loadScript("lua/queue/queue_enter.lua", List.class);
         this.checkScript = loadScript("lua/queue/queue_check.lua", List.class);
         this.consumeScript = loadScript("lua/queue/queue_consume.lua", Long.class);
-        this.leaveScript = loadScript("lua/queue/queue_leave.lua", Long.class);
+        this.leaveScript = loadScript("lua/queue/queue_leaveㅇㅇa", Long.class);
         this.promoteScript = loadScript("lua/queue/queue_promote.lua", Long.class);
     }
 
@@ -57,19 +60,9 @@ public class RedisEventQueueManager implements EventQueueManager {
                 eventId.toString()
         );
 
-        if (result == null || result.size() < 4) {
-            throw new IllegalStateException("대기열 진입 처리 중 오류가 발생했습니다. eventId=" + eventId);
-        }
+        validateLuaResult(result, eventId, "진입");
 
-        String phase = result.get(0);
-        String returnedToken = result.get(1);
-        int position = Integer.parseInt(result.get(2));
-        long remainingSeconds = Long.parseLong(result.get(3));
-
-        if ("ALLOWED".equals(phase)) {
-            return QueueStatus.allowed(returnedToken, remainingSeconds);
-        }
-        return QueueStatus.waiting(returnedToken, position);
+        return parseQueueStatus(result);
     }
 
     @Override
@@ -87,23 +80,13 @@ public class RedisEventQueueManager implements EventQueueManager {
                 String.valueOf(metadataTtl)
         );
 
-        if (result == null || result.size() < 4) {
-            throw new IllegalStateException("대기열 상태 조회 중 오류가 발생했습니다. eventId=" + eventId);
-        }
+        validateLuaResult(result, eventId, "상태 조회");
 
-        String phase = result.get(0);
-        if ("INVALID".equals(phase)) {
+        if (PHASE_INVALID.equals(result.get(0))) {
             throw new IllegalArgumentException("유효하지 않은 대기열 토큰입니다.");
         }
 
-        String returnedToken = result.get(1);
-        int position = Integer.parseInt(result.get(2));
-        long remainingSeconds = Long.parseLong(result.get(3));
-
-        if ("ALLOWED".equals(phase)) {
-            return QueueStatus.allowed(returnedToken, remainingSeconds);
-        }
-        return QueueStatus.waiting(returnedToken, position);
+        return parseQueueStatus(result);
     }
 
     @Override
@@ -173,6 +156,23 @@ public class RedisEventQueueManager implements EventQueueManager {
 
     private String sequenceKey(Long eventId) {
         return "queue:events:" + eventId + ":sequence";
+    }
+
+    private QueueStatus parseQueueStatus(List<String> result) {
+        String returnedToken = result.get(1);
+        int position = Integer.parseInt(result.get(2));
+        long remainingSeconds = Long.parseLong(result.get(3));
+        if (PHASE_ALLOWED.equals(result.get(0))) {
+            return QueueStatus.allowed(returnedToken, remainingSeconds);
+        }
+        return QueueStatus.waiting(returnedToken, position);
+    }
+
+    private void validateLuaResult(List<String> result, Long eventId, String operation) {
+        if (result == null || result.size() < 4) {
+            throw new IllegalStateException(
+                    String.format("대기열 %s 중 오류가 발생했습니다. eventId=%d", operation, eventId));
+        }
     }
 
     private static <T> DefaultRedisScript<T> loadScript(String path, Class<T> resultType) {
