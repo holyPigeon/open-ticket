@@ -38,9 +38,13 @@ public class QueueSchedulerFacade {
 
         try (Cursor<String> cursor = redisTemplate.opsForSet()
                 .scan(REGISTRY_KEY, ScanOptions.scanOptions().count(100).build())) {
-            cursor.forEachRemaining(eventId ->
-                    queueManager.promoteForEvent(Long.parseLong(eventId))
-            );
+            cursor.forEachRemaining(eventId -> {
+                try {
+                    queueManager.promoteForEvent(Long.parseLong(eventId));
+                } catch (Exception e) {
+                    // 단일 이벤트 승격 실패가 전체 스케줄러를 중단시키지 않도록 허용
+                }
+            });
         } finally {
             lock.unlock();
         }

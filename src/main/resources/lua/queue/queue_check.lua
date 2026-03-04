@@ -36,13 +36,14 @@ end
 -- 2. Check waiting ZSET
 local rank = redis.call('ZRANK', waitingKey, token)
 if rank ~= false then
-    -- Get userId from tokens hash to refresh users hash TTL
+    -- metadata가 없으면 세션이 복구 불가 상태 → INVALID 반환
     local metadata = redis.call('HGET', tokensKey, token)
-    if metadata then
-        local userId = string.match(metadata, '^([^:]+)')
-        redis.call('HEXPIRE', tokensKey, metadataTtl, 'FIELDS', 1, token)
-        redis.call('HEXPIRE', usersKey, metadataTtl, 'FIELDS', 1, userId)
+    if not metadata then
+        return {'INVALID', '', '0', '0'}
     end
+    local userId = string.match(metadata, '^([^:]+)')
+    redis.call('HEXPIRE', tokensKey, metadataTtl, 'FIELDS', 1, token)
+    redis.call('HEXPIRE', usersKey, metadataTtl, 'FIELDS', 1, userId)
     return {'WAITING', token, tostring(rank + 1), '0'}
 end
 

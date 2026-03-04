@@ -57,6 +57,10 @@ public class RedisEventQueueManager implements EventQueueManager {
                 eventId.toString()
         );
 
+        if (result == null || result.size() < 4) {
+            throw new IllegalStateException("대기열 진입 처리 중 오류가 발생했습니다. eventId=" + eventId);
+        }
+
         String phase = result.get(0);
         String returnedToken = result.get(1);
         int position = Integer.parseInt(result.get(2));
@@ -82,6 +86,10 @@ public class RedisEventQueueManager implements EventQueueManager {
                 token,
                 String.valueOf(metadataTtl)
         );
+
+        if (result == null || result.size() < 4) {
+            throw new IllegalStateException("대기열 상태 조회 중 오류가 발생했습니다. eventId=" + eventId);
+        }
 
         String phase = result.get(0);
         if ("INVALID".equals(phase)) {

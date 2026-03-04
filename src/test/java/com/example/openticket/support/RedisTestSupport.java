@@ -29,6 +29,8 @@ public abstract class RedisTestSupport {
 
     @BeforeEach
     void flushRedis() {
-        redisTemplate.getConnectionFactory().getConnection().serverCommands().flushDb();
+        try (var connection = redisTemplate.getConnectionFactory().getConnection()) {
+            connection.serverCommands().flushDb();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.openticket.global.auth;
 
+import com.example.openticket.global.exception.UnauthorizedException;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -27,7 +28,7 @@ public class LoginUserIdArgumentResolver implements HandlerMethodArgumentResolve
     ) {
         Long userId = (Long) webRequest.getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
         if (userId == null) {
-            throw new IllegalArgumentException("로그인이 필요한 서비스입니다.");
+            throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
         }
         return userId;
     }

@@ -20,18 +20,18 @@ local token           = ARGV[1]
 local activeWindowSec = tonumber(ARGV[2])
 local metadataTtl     = activeWindowSec * 2
 
--- Get userId from tokens hash
+-- Get userId from tokens hash (may be nil if metadata expired)
 local metadata = redis.call('HGET', tokensKey, token)
-if not metadata then
-    return 0
+local userId = nil
+if metadata then
+    userId = string.match(metadata, '^([^:]+)')
 end
-local userId = string.match(metadata, '^([^:]+)')
 
 -- 1. Try remove from active
 local removedFromActive = redis.call('HDEL', activeKey, token)
 if removedFromActive == 1 then
     redis.call('HDEL', tokensKey, token)
-    redis.call('HDEL', usersKey, userId)
+    if userId then redis.call('HDEL', usersKey, userId) end
     -- Promote next waiting user
     local candidates = redis.call('ZPOPMIN', waitingKey, 1)
     if #candidates >= 2 then
@@ -52,7 +52,7 @@ end
 local removedFromWaiting = redis.call('ZREM', waitingKey, token)
 if removedFromWaiting == 1 then
     redis.call('HDEL', tokensKey, token)
-    redis.call('HDEL', usersKey, userId)
+    if userId then redis.call('HDEL', usersKey, userId) end
     return 1
 end
 
