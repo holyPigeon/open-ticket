@@ -2,7 +2,7 @@ package com.example.openticket.api.controller.booking;
 
 import com.example.openticket.api.ApiResponse;
 import com.example.openticket.api.controller.booking.dto.request.BookingCreateRequest;
-import com.example.openticket.api.service.booking.BookingService;
+import com.example.openticket.api.service.booking.BookingUseCase;
 import com.example.openticket.api.service.booking.dto.response.BookingResponse;
 import com.example.openticket.domain.user.User;
 import com.example.openticket.global.auth.LoginUser;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class BookingController {
 
-    private final BookingService bookingService;
+    private final BookingUseCase bookingUseCase;
 
     @CheckQueueToken
     @PostMapping("/api/v1/bookings")
@@ -32,22 +32,22 @@ public class BookingController {
     ) {
         LocalDateTime now = LocalDateTime.now();
 
-        return ApiResponse.ok(bookingService.createBooking(user, request.toServiceRequest(), now));
+        return ApiResponse.ok(bookingUseCase.createBooking(user, request.toServiceRequest(), now));
     }
 
     @GetMapping("/api/v1/bookings/my")
     public ApiResponse<List<BookingResponse>> getUserBookings(@LoginUser User user) {
-        return ApiResponse.ok(bookingService.getUserBookings(user));
+        return ApiResponse.ok(bookingUseCase.getUserBookings(user));
     }
 
     @GetMapping("/api/v1/bookings/{bookingId}")
     public ApiResponse<BookingResponse> getBookingDetails(@PathVariable Long bookingId) {
-        return ApiResponse.ok(bookingService.getBookingDetails(bookingId));
+        return ApiResponse.ok(bookingUseCase.getBookingDetails(bookingId));
     }
 
     @PatchMapping("/api/v1/bookings/{bookingId}/cancel")
     public ApiResponse<BookingResponse> cancelBooking(@PathVariable Long bookingId) {
-        BookingResponse response = bookingService.cancelBooking(bookingId);
+        BookingResponse response = bookingUseCase.cancelBooking(bookingId);
 
         return ApiResponse.ok(response);
     }

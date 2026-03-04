@@ -1,5 +1,6 @@
 package com.example.openticket.api;
 
+import com.example.openticket.global.exception.LockAcquisitionException;
 import com.example.openticket.global.exception.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
@@ -35,6 +36,16 @@ public class ApiControllerAdvice {
     public ApiResponse<Object> handleIllegalStateException(IllegalStateException e) {
         return ApiResponse.of(
                 HttpStatus.BAD_REQUEST,
+                e.getMessage(),
+                null
+        );
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(LockAcquisitionException.class)
+    public ApiResponse<Object> handleLockAcquisitionException(LockAcquisitionException e) {
+        return ApiResponse.of(
+                HttpStatus.CONFLICT,
                 e.getMessage(),
                 null
         );
