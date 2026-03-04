@@ -3,6 +3,7 @@ package com.example.openticket.infrastructure.queue.redis;
 import com.example.openticket.domain.queue.EventQueueManager;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -12,6 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "queue.type", havingValue = "redis")
@@ -42,11 +44,13 @@ public class QueueSchedulerFacade {
                 try {
                     queueManager.promoteForEvent(Long.parseLong(eventId));
                 } catch (Exception e) {
-                    // 단일 이벤트 승격 실패가 전체 스케줄러를 중단시키지 않도록 허용
+                    log.warn("이벤트 대기열 승격 실패. eventId={}", eventId, e);
                 }
             });
         } finally {
-            lock.unlock();
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 }
