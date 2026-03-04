@@ -42,6 +42,5 @@ out/
 
 ### Load test ###
 node_modules/
-package-lock.json
-tokens.csv
-/package.json
+load-test/package-lock.json
+load-test/tokens.csv
