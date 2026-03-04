@@ -36,7 +36,7 @@ public class RedisEventQueueManager implements EventQueueManager {
         this.enterScript = loadScript("lua/queue/queue_enter.lua", List.class);
         this.checkScript = loadScript("lua/queue/queue_check.lua", List.class);
         this.consumeScript = loadScript("lua/queue/queue_consume.lua", Long.class);
-        this.leaveScript = loadScript("lua/queue/queue_leaveㅇㅇa", Long.class);
+        this.leaveScript = loadScript("lua/queue/queue_leave.lua", Long.class);
         this.promoteScript = loadScript("lua/queue/queue_promote.lua", Long.class);
     }
 

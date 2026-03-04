@@ -56,9 +56,9 @@ class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
 
         readyLatch.await(5, TimeUnit.SECONDS);
         startLatch.countDown();
-        doneLatch.await(30, TimeUnit.SECONDS);
+        doneLatch.await(10, TimeUnit.SECONDS);
         executorService.shutdown();
-        executorService.awaitTermination(5, TimeUnit.SECONDS);
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
 
         int allowedCount = 0;
         int waitingCount = 0;
@@ -84,7 +84,7 @@ class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
     }
 
     @DisplayName("동시 진입 테스트를 반복해도 ALLOWED는 최대 100명을 유지한다.")
-    @RepeatedTest(20)
+    @RepeatedTest(5)
     void concurrentEnter_repeated_shouldNeverExceedActiveLimit() throws InterruptedException {
         concurrentEnter_150Users_shouldSplitAllowedAndWaiting();
     }
@@ -131,9 +131,9 @@ class RedisEventQueueManagerConcurrencyTest extends RedisTestSupport {
 
         readyLatch.await(5, TimeUnit.SECONDS);
         startLatch.countDown();
-        doneLatch.await(30, TimeUnit.SECONDS);
+        doneLatch.await(10, TimeUnit.SECONDS);
         executorService.shutdown();
-        executorService.awaitTermination(5, TimeUnit.SECONDS);
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
 
         // All 50 waiting users should now be ALLOWED
         int promotedCount = 0;

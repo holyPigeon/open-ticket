@@ -1,6 +1,8 @@
 package com.example.openticket.support;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -13,6 +15,7 @@ import org.testcontainers.utility.DockerImageName;
 @ActiveProfiles("test-redis")
 @SpringBootTest
 @EnabledIfDockerAvailable
+@Execution(ExecutionMode.SAME_THREAD)
 public abstract class RedisTestSupport {
 
     @ServiceConnection(name = "redis")
