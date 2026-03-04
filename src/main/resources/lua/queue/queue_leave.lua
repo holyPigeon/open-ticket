@@ -30,7 +30,7 @@ end
 -- 1. Try remove from active
 local removedFromActive = redis.call('HDEL', activeKey, token)
 if removedFromActive == 1 then
-    redis.call('HDEL', tokensKey, token)
+    if metadata then redis.call('HDEL', tokensKey, token) end
     if userId then redis.call('HDEL', usersKey, userId) end
     -- Promote next waiting user
     local candidates = redis.call('ZPOPMIN', waitingKey, 1)
@@ -51,7 +51,7 @@ end
 -- 2. Try remove from waiting
 local removedFromWaiting = redis.call('ZREM', waitingKey, token)
 if removedFromWaiting == 1 then
-    redis.call('HDEL', tokensKey, token)
+    if metadata then redis.call('HDEL', tokensKey, token) end
     if userId then redis.call('HDEL', usersKey, userId) end
     return 1
 end
