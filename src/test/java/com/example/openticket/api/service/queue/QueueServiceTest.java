@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.openticket.api.service.queue.dto.response.QueueStatusResponse;
-import com.example.openticket.global.queue.QueuePhase;
+import com.example.openticket.domain.queue.QueuePhase;
 import com.example.openticket.support.IntegrationTestSupport;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,6 +25,7 @@ class QueueServiceTest extends IntegrationTestSupport {
         assertThat(response.token()).isNotBlank();
         assertThat(response.phase()).isEqualTo(QueuePhase.ALLOWED);
         assertThat(response.remainingSeconds()).isGreaterThan(0);
+        assertThat(response.pollIntervalSeconds()).isEqualTo(0);
     }
 
     @DisplayName("같은 사용자가 같은 이벤트에 재진입하면 기존 토큰을 반환한다.")
@@ -52,6 +53,7 @@ class QueueServiceTest extends IntegrationTestSupport {
         // then
         assertThat(status.token()).isEqualTo(entered.token());
         assertThat(status.phase()).isEqualTo(QueuePhase.ALLOWED);
+        assertThat(status.pollIntervalSeconds()).isEqualTo(0);
     }
 
     @DisplayName("유효하지 않은 토큰으로 상태를 조회하면 예외가 발생한다.")

@@ -1,5 +1,7 @@
-package com.example.openticket.global.queue;
+package com.example.openticket.global.interceptor;
 
+import com.example.openticket.domain.queue.EventQueueManager;
+import com.example.openticket.global.annotation.CheckQueueToken;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Objects;

@@ -1,15 +1,22 @@
-package com.example.openticket.global.queue;
+package com.example.openticket.infrastructure.queue.memory;
 
+import com.example.openticket.domain.queue.ActiveToken;
+import com.example.openticket.domain.queue.EventQueueManager;
+import com.example.openticket.domain.queue.QueueEntry;
+import com.example.openticket.domain.queue.QueuePhase;
+import com.example.openticket.domain.queue.QueueStatus;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EventQueueManager {
+@ConditionalOnProperty(name = "queue.type", havingValue = "memory", matchIfMissing = true)
+public class InMemoryEventQueueManager implements EventQueueManager {
 
     private static final int MAX_ACTIVE_PER_EVENT = 100;
     private static final long ACTIVE_WINDOW_MS = 10 * 60 * 1000L;
@@ -19,33 +26,30 @@ public class EventQueueManager {
     private final ConcurrentHashMap<Long, AtomicLong> sequenceCounters = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Long, AtomicInteger> activeCounts = new ConcurrentHashMap<>();
 
-    public QueueEntry enter(Long eventId, Long userId) {
+    @Override
+    public QueueStatus enter(Long eventId, Long userId) {
         evictExpiredTokensForEvent(eventId);
 
-        // 입장 가능한 사람 목록에 유저가 있는지 확인
         QueueEntry activeEntry = findActiveEntry(eventId, userId);
         if (activeEntry != null) {
-            return activeEntry;
+            return check(eventId, activeEntry.token());
         }
 
-        // 대기해야 할 사람 목록에 유저가 있는지 확인
         QueueEntry waitingEntry = findWaitingEntry(eventId, userId);
         if (waitingEntry != null) {
-            return waitingEntry;
+            return check(eventId, waitingEntry.token());
         }
 
-        // 이전에 발급된 토큰이 없으므로 새로 발급
         QueueEntry newEntry = issueNewEntry(eventId, userId);
         if (tryActivate(eventId, newEntry)) {
-            return newEntry;
+            return check(eventId, newEntry.token());
         }
         addToWaitingQueue(eventId, newEntry);
-        return newEntry;
+        return check(eventId, newEntry.token());
     }
 
+    @Override
     public QueueStatus check(Long eventId, String token) {
-        // Pure query: no state mutation (eviction/promotion) is triggered here.
-
         QueueStatus activeStatus = findActiveStatus(eventId, token);
         if (activeStatus != null) {
             return activeStatus;
@@ -59,10 +63,12 @@ public class EventQueueManager {
         throw new IllegalArgumentException("유효하지 않은 대기열 토큰입니다.");
     }
 
+    @Override
     public boolean validate(Long eventId, String token) {
         return findValidActiveToken(eventId, token) != null;
     }
 
+    @Override
     public boolean consumeActiveToken(Long eventId, String token) {
         ActiveToken activeToken = findValidActiveToken(eventId, token);
         if (activeToken == null) {
@@ -70,7 +76,6 @@ public class EventQueueManager {
         }
 
         ConcurrentHashMap<String, ActiveToken> eventTokens = activeTokens.get(eventId);
-        // Contract: true means token was valid and state transition (consume/promote) was applied.
         if (!eventTokens.remove(token, activeToken)) {
             return false;
         }
@@ -80,6 +85,7 @@ public class EventQueueManager {
         return true;
     }
 
+    @Override
     public boolean leave(Long eventId, String token) {
         if (removeFromActive(eventId, token)) {
             return true;
@@ -87,12 +93,15 @@ public class EventQueueManager {
         return removeFromWaiting(eventId, token);
     }
 
-    @Scheduled(fixedDelay = 30_000)
+    @Override
+    public void promoteForEvent(Long eventId) {
+        evictExpiredTokensForEvent(eventId);
+        promoteWaiting(eventId);
+    }
+
+    @Scheduled(fixedDelay = 5000)
     public void evictExpiredTokens() {
-        activeTokens.forEach((eventId, tokens) -> {
-            evictExpiredTokensForEvent(eventId);
-            promoteWaiting(eventId);
-        });
+        activeTokens.keySet().forEach(this::promoteForEvent);
     }
 
     private QueueEntry findActiveEntry(Long eventId, Long userId) {
@@ -289,5 +298,4 @@ public class EventQueueManager {
         AtomicInteger activeCount = activeCounts.get(eventId);
         return activeCount == null ? 0 : activeCount.get();
     }
-
 }

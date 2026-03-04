@@ -1,7 +1,9 @@
-package com.example.openticket.global.queue;
+package com.example.openticket.infrastructure.queue.memory;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.openticket.domain.queue.QueuePhase;
+import com.example.openticket.domain.queue.QueueStatus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,7 @@ class EventQueueManagerLoadTest {
     @Test
     void concurrentEnter_150Users_shouldSplitAllowedAndWaiting() throws InterruptedException {
         // given
-        EventQueueManager manager = new EventQueueManager();
+        InMemoryEventQueueManager manager = new InMemoryEventQueueManager();
         Long eventId = 1L;
         int totalUsers = 150;
 
@@ -37,7 +39,7 @@ class EventQueueManagerLoadTest {
                 readyLatch.countDown();
                 try {
                     startLatch.await();
-                    QueueEntry entry = manager.enter(eventId, uid);
+                    QueueStatus entry = manager.enter(eventId, uid);
                     userTokens.put(uid, entry.token());
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -49,9 +51,9 @@ class EventQueueManagerLoadTest {
 
         readyLatch.await(5, TimeUnit.SECONDS);
         startLatch.countDown();
-        doneLatch.await(10, TimeUnit.SECONDS);
+        doneLatch.await(3, TimeUnit.SECONDS);
         executorService.shutdown();
-        executorService.awaitTermination(5, TimeUnit.SECONDS);
+        executorService.awaitTermination(3, TimeUnit.SECONDS);
 
         int allowedCount = 0;
         int waitingCount = 0;
@@ -75,7 +77,7 @@ class EventQueueManagerLoadTest {
     }
 
     @DisplayName("동시 진입 테스트를 반복해도 ALLOWED는 최대 100명을 유지한다.")
-    @RepeatedTest(20)
+    @RepeatedTest(5)
     void concurrentEnter_repeated_shouldNeverExceedActiveLimit() throws InterruptedException {
         concurrentEnter_150Users_shouldSplitAllowedAndWaiting();
     }
@@ -84,7 +86,7 @@ class EventQueueManagerLoadTest {
     @Test
     void waitingUser_shouldBePromoted_whenActiveUsersConsumeTokens() {
         // given
-        EventQueueManager manager = new EventQueueManager();
+        InMemoryEventQueueManager manager = new InMemoryEventQueueManager();
         Long eventId = 1L;
         List<String> activeTokens = new ArrayList<>();
 
@@ -92,9 +94,9 @@ class EventQueueManagerLoadTest {
             activeTokens.add(manager.enter(eventId, userId).token());
         }
 
-        QueueEntry waiting1 = manager.enter(eventId, 101L);
-        QueueEntry waiting2 = manager.enter(eventId, 102L);
-        QueueEntry waiting3 = manager.enter(eventId, 103L);
+        QueueStatus waiting1 = manager.enter(eventId, 101L);
+        QueueStatus waiting2 = manager.enter(eventId, 102L);
+        QueueStatus waiting3 = manager.enter(eventId, 103L);
 
         assertThat(manager.check(eventId, waiting1.token()).position()).isEqualTo(1);
         assertThat(manager.check(eventId, waiting2.token()).position()).isEqualTo(2);

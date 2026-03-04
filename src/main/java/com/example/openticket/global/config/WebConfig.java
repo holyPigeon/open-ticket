@@ -2,7 +2,8 @@ package com.example.openticket.global.config;
 
 import com.example.openticket.global.auth.AuthenticationInterceptor;
 import com.example.openticket.global.auth.LoginUserArgumentResolver;
-import com.example.openticket.global.queue.QueueValidationInterceptor;
+import com.example.openticket.global.auth.LoginUserIdArgumentResolver;
+import com.example.openticket.global.interceptor.QueueValidationInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -17,12 +18,14 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer {
 
     private final LoginUserArgumentResolver loginUserArgumentResolver;
+    private final LoginUserIdArgumentResolver loginUserIdArgumentResolver;
     private final AuthenticationInterceptor authenticationInterceptor;
     private final QueueValidationInterceptor queueValidationInterceptor;
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
         resolvers.add(loginUserArgumentResolver);
+        resolvers.add(loginUserIdArgumentResolver);
     }
 
     @Override

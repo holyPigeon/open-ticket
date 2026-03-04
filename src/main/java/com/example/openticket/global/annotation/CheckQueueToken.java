@@ -1,4 +1,4 @@
-package com.example.openticket.global.queue;
+package com.example.openticket.global.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
